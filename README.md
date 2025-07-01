@@ -2,6 +2,8 @@
 
 **Welcome to 4o-ghibli-at-home! Your own private, high-performance AI photo stylizer, powered by the `FLUX.1-Kontext-dev` model.**
 
+![Screenshot](screenshot.png)
+
 ## Quick Start
 
 ### Requirements
