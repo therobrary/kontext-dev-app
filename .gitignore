@@ -1,0 +1,97 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+.pipenv/
+.python-version
+
+# Flask instance and config files
+instance/
+*.cfg
+*.env
+.env.*
+.envrc
+
+# Flask cache and logs
+*.log
+*.sqlite3
+*.db
+
+# Pytest and coverage
+.cache/
+.coverage
+coverage.*
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Editor and OS files
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Celery beat schedule files
+celerybeat-schedule
+celerybeat.pid
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Node/npm (if any frontend present)
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+
+# Gunicorn/PID files
+*.pid
+
+# Coverage reports
+coverage.xml
+*.cover
+
+# Other
+*.bak
+*.tmp
+*.old
+
+# VSCode settings (optional)
+.vscode/
+
+# MISC
+DFloat11__FLUX.1-Kontext-dev-DF11/
+generated_images/
