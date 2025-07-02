@@ -1,16 +1,19 @@
 {
     "app_defaults": {
-        "prompt": "enhance the scene with vibrant colors and beautiful lighting, maintain original composition and subject identity, professional quality",
-        "prompt_2": "sharp details, masterpiece quality, enhanced clarity",
-        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish",
-        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast",
+        "prompt": "transform into Studio Ghibli anime style, hand-painted watercolor aesthetic, soft pastel palette, whimsical atmosphere, preserve subject identity and scene composition",
+        "prompt_2": "painterly brushstrokes, dreamy color grading, cinematic composition, Miyazaki-inspired backgrounds",
+        "negative_prompt": "photorealistic, 3D rendering, harsh lighting, modern digital look, sharp edges, jpeg artefacts, noisy",
+        "negative_prompt_2": "plastic textures, CGI artifacts, oversaturated neon colors, blur, washed-out",
         "width": 1024,
         "height": 1024,
         "adjust_resolution": true,
-        "steps": 28,
+        "steps": 34,
         "guidance": 3.5,
-        "cfg": 1,
-        "seed": ""
+        "cfg": 1.2,
+        "prompt_2_enabled": true,
+        "negative_prompt_enabled": true,
+        "negative_prompt_2_enabled": true,
+        "use_specific_seed": false
     },
     "categories": [
         {
