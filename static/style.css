@@ -1,0 +1,552 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap');
+
+:root {
+    --ff: "Ubuntu", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --radius: 6px;
+
+    --primary-color: #012a36;
+    --secondary-color: #fcffeb;
+    --secondary-color-dark: #d5b986;
+    --tertiary-color: #c85c2d;
+    --tertiary-color-light: #d26637;
+    --link-color: #b7542a;
+
+    --black: #292929;
+    --code-bg: #272822;
+    --code-fg: #f8f8f2;
+    --code-scroll-thumb: #525252;
+    --scrollbar-track: #efefe6;
+    --scrollbar-thumb: #b7b78f;
+}
+
+/* Simplified dark mode for this app */
+body.dark {
+    --primary-color: #efefe6;
+    --secondary-color: #292929;
+    --tertiary-color: #ff7f11;
+    --link-color: #c76c1c;
+    --tertiary-color-light: #a34c00;
+    --secondary-color-dark: #343431;
+    --scrollbar-track: #292929;
+    --scrollbar-thumb: #525252;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--ff);
+    background: var(--secondary-color);
+    min-height: 100vh;
+    color: var(--primary-color);
+    padding: 20px;
+    transition: all 0.3s ease;
+    display: block;
+    /* Override flex for a more traditional layout */
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: var(--radius);
+}
+
+.app-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+    .app-container {
+        grid-template-columns: 1fr 400px;
+        /* Main content and a sidebar */
+    }
+}
+
+.main-content,
+.controls-panel {
+    background: var(--secondary-color);
+    border: 2px solid var(--secondary-color-dark);
+    border-radius: var(--radius);
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: 2.5em;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--tertiary-color);
+    text-align: center;
+}
+
+h2 {
+    font-size: 1.5em;
+    font-weight: 500;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+/* --- Image Upload & Preview --- */
+#upload-area {
+    border: 3px dashed var(--secondary-color-dark);
+    border-radius: var(--radius);
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    /* Updated: parent container handles spacing */
+    flex-grow: 1;
+    /* New: allows it to grow in flex container */
+}
+
+/* NEW: Disabled state for the upload area */
+#upload-area.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    border-style: solid;
+}
+
+#upload-area.drag-over {
+    border-color: var(--tertiary-color);
+    background-color: var(--secondary-color-dark);
+}
+
+#upload-area p {
+    font-size: 1.2em;
+    color: var(--primary-color);
+    opacity: 0.7;
+}
+
+#file-input {
+    display: none;
+}
+
+#image-preview-wrapper {
+    position: relative;
+    width: 100%;
+    background: var(--code-bg);
+    border-radius: var(--radius);
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#image-preview {
+    max-width: 100%;
+    max-height: 80vh;
+    display: none;
+    /* Hidden until an image is loaded */
+}
+
+/* NEW: Container for bottom upload controls */
+.upload-controls {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.cancel-upload-btn {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* --- General UI Elements --- */
+.btn {
+    padding: 12px 25px;
+    background: var(--tertiary-color);
+    border: none;
+    border-radius: var(--radius);
+    color: var(--secondary-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    font-family: var(--ff);
+    font-weight: 500;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn:hover {
+    background: var(--tertiary-color-light);
+}
+
+.btn:disabled {
+    background: var(--secondary-color-dark);
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: var(--secondary-color);
+    color: var(--primary-color);
+    border: 2px solid var(--secondary-color-dark);
+}
+
+.btn-secondary:hover {
+    border-color: var(--tertiary-color);
+}
+
+.btn-secondary:disabled {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color-dark);
+    color: var(--primary-color);
+    opacity: 0.5;
+}
+
+/* --- Controls Panel --- */
+/* NEW: Consistent Section Separator */
+.settings-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid var(--secondary-color-dark);
+}
+
+.control-group {
+    margin-bottom: 20px;
+}
+
+/* Make the last group in a section have no bottom margin for cleaner spacing */
+.settings-section>.control-group:last-child {
+    margin-bottom: 0;
+}
+
+.control-group label,
+.optional-control .label-wrapper label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.control-group input[type="range"],
+.control-group input[type="number"],
+.control-group input[type="text"],
+.control-group select,
+.control-group textarea {
+    width: 100%;
+    padding: 10px;
+    background: var(--secondary-color);
+    border: 2px solid var(--secondary-color-dark);
+    border-radius: var(--radius);
+    color: var(--primary-color);
+    font-size: 16px;
+    font-family: var(--ff);
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.control-group textarea:disabled,
+.control-group input:disabled {
+    background-color: var(--secondary-color-dark);
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.control-group input:focus,
+.control-group textarea:focus,
+.control-group select:focus {
+    border-color: var(--tertiary-color);
+}
+
+.control-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.slider-container input[type="number"] {
+    width: 80px;
+}
+
+.profile-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 10px;
+}
+
+.profile-btn {
+    padding: 10px;
+    background: var(--secondary-color);
+    border: 2px solid var(--secondary-color-dark);
+    border-radius: var(--radius);
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-family: var(--ff);
+    text-align: center;
+}
+
+.profile-btn:hover {
+    border-color: var(--tertiary-color-light);
+}
+
+.profile-btn.active {
+    background: var(--tertiary-color);
+    color: var(--secondary-color);
+    border-color: var(--tertiary-color);
+}
+
+.profile-btn-icon {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.profile-btn-icon .icon {
+    color: #8fa3a6;
+    /* A color that mimics the screenshot's icon color */
+    line-height: 1;
+    /* Helps with vertical alignment */
+}
+
+.optional-control .label-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.optional-control .label-wrapper label {
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
+.optional-control input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--tertiary-color);
+}
+
+.resolution-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.resolution-inputs input {
+    text-align: center;
+}
+
+.resolution-inputs span {
+    font-weight: bold;
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+/* Spacing for action buttons at the top of the panel */
+.controls-panel>.action-buttons {
+    margin-top: 15px;
+}
+
+/* Styles for clickable section headers */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+    user-select: none;
+    /* Prevent text selection on click */
+}
+
+/* Make clickable section headers look different from static H2s */
+.section-header:hover h2 {
+    color: var(--tertiary-color);
+}
+
+.section-header h2 {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+#advanced-settings-header {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    /* Space between prompt and this header */
+}
+
+.header-arrow {
+    font-size: 1.425em;
+    font-weight: bold;
+    color: var(--tertiary-color);
+    transition: transform 0.3s ease;
+    line-height: 1;
+}
+
+.section-header[aria-expanded="true"] .header-arrow {
+    transform: rotate(180deg);
+}
+
+#advanced-settings-content {
+    display: none;
+    /* Collapsed by default */
+    padding-top: 15px;
+}
+
+/* --- Style Profiles Accordion --- */
+.profile-category {
+    border-bottom: 1px solid var(--secondary-color-dark);
+}
+
+.profile-category:last-of-type {
+    margin-bottom: 0;
+}
+
+.profile-category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    padding: 12px 0;
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 500;
+    color: var(--primary-color);
+    border: none;
+    transition: color 0.3s ease;
+}
+
+.profile-category-header:hover {
+    color: var(--tertiary-color);
+}
+
+.profile-category-header .header-arrow {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--tertiary-color);
+    transition: transform 0.3s ease;
+    line-height: 1;
+}
+
+.profile-category.active .profile-category-header .header-arrow {
+    transform: rotate(180deg);
+}
+
+.profile-category.active .profile-category-header {
+    color: var(--tertiary-color);
+}
+
+.profile-category-content {
+    display: none;
+    /* Hidden by default */
+    padding-top: 10px;
+    padding-bottom: 20px;
+}
+
+.profile-category.active .profile-category-content {
+    display: grid;
+}
+
+/* NEW: Better layout for Custom Profile actions */
+.profile-action-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.profile-action-group select,
+.profile-action-group input[type="text"] {
+    flex-grow: 1;
+    /* Allow input/select to fill space */
+}
+
+.profile-action-group .btn {
+    padding: 10px 15px;
+    /* Make buttons less wide */
+    flex-shrink: 0;
+    /* Prevent button from shrinking */
+}
+
+/* --- Loading and Error States --- */
+#loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    z-index: 10;
+    border-radius: var(--radius);
+}
+
+#loader p {
+    font-size: 1.2em;
+    padding: 0 10px;
+}
+
+.spinner {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid var(--tertiary-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#error-toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--tertiary-color);
+    color: var(--secondary-color);
+    padding: 15px 30px;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    display: none;
+}

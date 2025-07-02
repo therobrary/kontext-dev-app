@@ -1,0 +1,967 @@
+{
+    "app_defaults": {
+        "prompt": "enhance the scene with vibrant colors and beautiful lighting, maintain original composition and subject identity, professional quality",
+        "prompt_2": "sharp details, masterpiece quality, enhanced clarity",
+        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish",
+        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast",
+        "width": 1024,
+        "height": 1024,
+        "adjust_resolution": true,
+        "steps": 28,
+        "guidance": 3.5,
+        "cfg": 1,
+        "seed": ""
+    },
+    "categories": [
+        {
+            "name": "Animation & Style Transfer",
+            "profiles": [
+                {
+                    "id": "ghibli_style_1",
+                    "name": "Ghibli Soft",
+                    "settings": {
+                        "prompt": "transform into Studio Ghibli anime style, hand-painted watercolor aesthetic, soft pastel palette, whimsical atmosphere, preserve subject identity and scene composition",
+                        "prompt_2": "painterly brushstrokes, dreamy color grading, cinematic composition, Miyazaki-inspired backgrounds",
+                        "negative_prompt": "photorealistic, 3D rendering, harsh lighting, modern digital look, sharp edges, jpeg artefacts, noisy",
+                        "negative_prompt_2": "plastic textures, CGI artifacts, oversaturated neon colors, blur, washed-out",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 34,
+                        "guidance": 3.5,
+                        "cfg": 1.2,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "ghibli_style_2",
+                    "name": "Ghibli Classic",
+                    "settings": {
+                        "prompt": "lush hand-painted scenery in Studio Ghibli style, warm diffused sunlight, gentle film grain, masterpiece illustration with nature spirits",
+                        "prompt_2": "anime cel-shading, vibrant earth tones, cinematic composition, traditional animation feel",
+                        "negative_prompt": "photorealistic, jpeg artifacts, moiré, watermark, text, washed-out colors, distorted features",
+                        "negative_prompt_2": "low-detail, overexposed, underexposed, digital artifacts, blur, unnatural skin",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 32,
+                        "guidance": 3.2,
+                        "cfg": 1.2,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "ghibli_inspired",
+                    "name": "Ghibli Inspired",
+                    "settings": {
+                        "prompt": "transform into the style of Studio Ghibli, lush painted backgrounds, whimsical lighting, soft color gradients, magical realism",
+                        "prompt_2": "hand-painted anime, high detail, gentle tones, Miyazaki aesthetic",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, pixelated, noisy, compression artefacts, cartoonish, photorealistic, 3D render",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast",
+                        "guidance": 3.1,
+                        "cfg": 1,
+                        "steps": 32,
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "ukiyo_e",
+                    "name": "Ukiyo-e",
+                    "settings": {
+                        "prompt": "traditional Japanese ukiyo-e woodblock print style, flat color areas with bold outlines, wave patterns, preserve subject in Edo period aesthetic",
+                        "prompt_2": "Hokusai and Hiroshige influence, limited color palette, decorative elements, artistic simplification",
+                        "negative_prompt": "photorealistic shading, Western perspective, modern elements, gradient fills",
+                        "negative_prompt_2": "3D depth, realistic textures, contemporary style",
+                        "width": 768,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 34,
+                        "guidance": 3.8,
+                        "cfg": 1.2,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "comic_book",
+                    "name": "Comic Book",
+                    "settings": {
+                        "prompt": "dynamic comic book art style, bold ink outlines, Ben Day dots, action poses with motion lines, transform into superhero scene",
+                        "prompt_2": "Marvel and DC aesthetic, dramatic angles, speech bubble space, vibrant primary colors",
+                        "negative_prompt": "photorealism, subtle shading, muted colors, static composition",
+                        "negative_prompt_2": "realistic proportions, natural lighting, fine details",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 30,
+                        "guidance": 3.2,
+                        "cfg": 1.2,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Fancy & Dramatic Edits",
+            "profiles": [
+                {
+                    "id": "cyberpunk_style_1",
+                    "name": "Cyberpunk Neon",
+                    "settings": {
+                        "prompt": "transform into neon-drenched cyberpunk aesthetic, rain-slicked reflective streets, holographic advertisements, preserve subject identity in dystopian setting",
+                        "prompt_2": "electric cyan and hot magenta accents, noir atmosphere, Blade Runner 2049 color grading",
+                        "negative_prompt": "daylight, pastoral, low-tech, muted palette, rural elements, jpeg artefacts",
+                        "negative_prompt_2": "washed-out neon, desaturated, flat lighting, blur, low contrast",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 33,
+                        "guidance": 3.8,
+                        "cfg": 1.25,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "cyberpunk_style_2",
+                    "name": "Cyberpunk Retro",
+                    "settings": {
+                        "prompt": "retro-futuristic poster design, distressed texture with speckled noise, aged paper with electric cyan and deep magenta accents, high-contrast silhouettes",
+                        "prompt_2": "screen-print texture, halftone dots, sharp ink edges, limited color palette, underground zine aesthetic",
+                        "negative_prompt": "photorealistic, glossy surfaces, modern gradients, oversaturation, blur",
+                        "negative_prompt_2": "compression blocks, color banding, digital smoothing, jpeg artefacts",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 30,
+                        "guidance": 3.5,
+                        "cfg": 1.3,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "synthwave",
+                    "name": "Synthwave",
+                    "settings": {
+                        "prompt": "80s synthwave aesthetic, neon grid landscape, purple and pink sunset, chrome reflections, transform scene into retro-futuristic paradise",
+                        "prompt_2": "Miami Vice color palette, laser grids, palm tree silhouettes, VHS scan lines, vintage arcade glow",
+                        "negative_prompt": "natural colors, realistic lighting, modern design, muted tones",
+                        "negative_prompt_2": "photographic realism, contemporary elements, desaturated colors",
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "steps": 32,
+                        "guidance": 3.5,
+                        "cfg": 1.25,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "brutalist",
+                    "name": "Brutalist",
+                    "settings": {
+                        "prompt": "brutalist architectural style, raw concrete textures, monolithic geometric forms, dramatic shadows, transform scene into brutalist monument",
+                        "prompt_2": "fortress-like presence, minimalist power, urban dystopia aesthetic, architectural photography",
+                        "negative_prompt": "ornate details, soft curves, colorful elements, decorative features",
+                        "negative_prompt_2": "delicate structures, natural materials, human scale",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 34,
+                        "guidance": 3.8,
+                        "cfg": 1.3,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "futurist_neon",
+                    "name": "Futurist Neon",
+                    "settings": {
+                        "prompt": "cyberpunk aesthetic, neon lighting, vibrant magenta and cyan, dramatic shadows, futuristic city background, what not to change: subject identity and pose",
+                        "prompt_2": "high contrast, glowing lights, sharp detail, Blade Runner aesthetic",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish, natural lighting, daytime",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast",
+                        "guidance": 3.5,
+                        "cfg": 1,
+                        "steps": 32,
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "fantasy",
+                    "name": "Fantasy Magic",
+                    "settings": {
+                        "prompt": "transform into magical fantasy scene, ethereal bioluminescent lighting, floating mystical particles, preserve character identity in enchanted setting",
+                        "prompt_2": "aurora borealis effects, crystalline structures, storybook illustration quality, otherworldly atmosphere",
+                        "negative_prompt": "mundane realism, modern technology, harsh fluorescent light, everyday objects, jpeg artefacts",
+                        "negative_prompt_2": "scientific accuracy, photographic literalism, blur, washed-out colors",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 38,
+                        "guidance": 3.8,
+                        "cfg": 1.25,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Artistic & Creative",
+            "profiles": [
+                {
+                    "id": "artistic_style_1",
+                    "name": "Expressive",
+                    "settings": {
+                        "prompt": "expressive fine art transformation, bold impasto brushstrokes, vivid complementary colors, emotional impact, retain subject recognition",
+                        "prompt_2": "museum-quality presentation, dynamic composition, unique artistic vision, textured canvas",
+                        "negative_prompt": "photographic literalism, mundane appearance, flat tones, digital precision, jpeg artefacts",
+                        "negative_prompt_2": "generic filters, uninspired composition, washed-out",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 35,
+                        "guidance": 4,
+                        "cfg": 1.25,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "artistic_style_2",
+                    "name": "Surreal",
+                    "settings": {
+                        "prompt": "surreal dreamscape transformation, unexpected color harmonies, abstract geometric shapes, mixed media collage aesthetic",
+                        "prompt_2": "experimental techniques, controlled chaos, gallery-worthy innovation",
+                        "negative_prompt": "photorealism, literal interpretation, muted palette, conventional composition",
+                        "negative_prompt_2": "jpeg artefacts, blur, washed-out colors",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 34,
+                        "guidance": 2.8,
+                        "cfg": 1.15,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "oil_painting",
+                    "name": "Oil Painting",
+                    "settings": {
+                        "prompt": "transform into classical oil painting, thick impasto technique with visible brushstrokes, Rembrandt lighting, preserve subject identity as painted portrait",
+                        "prompt_2": "old master technique, glazing layers, rich earth tones, museum-quality fine art",
+                        "negative_prompt": "digital art, flat colors, photographic elements, modern style",
+                        "negative_prompt_2": "smooth blending, airbrush effect, contemporary techniques",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 36,
+                        "guidance": 4.2,
+                        "cfg": 1.3,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "watercolor",
+                    "name": "Watercolor",
+                    "settings": {
+                        "prompt": "delicate watercolor painting style, transparent washes with color bleeding, paper texture visible, soft ethereal quality, preserve scene composition",
+                        "prompt_2": "wet-on-wet technique, granulation effects, artistic color mixing, gallery-quality artwork",
+                        "negative_prompt": "hard edges, opaque colors, digital precision, photographic detail",
+                        "negative_prompt_2": "oil paint thickness, acrylic flatness, marker strokes",
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "steps": 33,
+                        "guidance": 3,
+                        "cfg": 1.15,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "watercolor_dreamscape",
+                    "name": "Dreamscape",
+                    "settings": {
+                        "prompt": "ethereal watercolor painting, soft edges, pastel colors, dreamy atmosphere, painterly brushstrokes on textured paper",
+                        "prompt_2": "delicate detail, hand-painted look, wet-on-wet technique",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, photorealistic, sharp edges, digital look",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast, oil painting, acrylic",
+                        "guidance": 2.5,
+                        "cfg": 1,
+                        "steps": 28,
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "impressionist",
+                    "name": "Impressionist",
+                    "settings": {
+                        "prompt": "French Impressionist painting style, broken color technique, capture fleeting light effects, outdoor scene en plein air, preserve scene essence",
+                        "prompt_2": "Monet and Renoir influence, visible brushstrokes, luminous shadows, atmospheric perspective",
+                        "negative_prompt": "sharp details, photographic precision, dark palette, indoor lighting",
+                        "negative_prompt_2": "smooth blending, technical accuracy, muted colors",
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "steps": 35,
+                        "guidance": 3.5,
+                        "cfg": 1.2,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "renaissance",
+                    "name": "Classic Renaissance",
+                    "settings": {
+                        "prompt": "Renaissance master painting style, sfumato technique, classical composition, rich velvet and brocade textures, transform subject into nobility",
+                        "prompt_2": "Leonardo da Vinci lighting, oil on canvas texture, gold leaf accents, period-accurate details",
+                        "negative_prompt": "modern clothing, contemporary hairstyles, digital artifacts, harsh lighting",
+                        "negative_prompt_2": "photographic elements, casual poses, modern backgrounds",
+                        "width": 896,
+                        "height": 1152,
+                        "adjust_resolution": true,
+                        "steps": 38,
+                        "guidance": 4.5,
+                        "cfg": 1.35,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "painterly_renaissance",
+                    "name": "Painterly Renaissance",
+                    "settings": {
+                        "prompt": "old master painting, renaissance portrait, rich oil colors, soft brushwork (sfumato), dramatic light and shadow (chiaroscuro)",
+                        "prompt_2": "classic art, fine canvas texture, historical look, da Vinci style",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, pixelated, noisy, compression artefacts, cartoonish, photorealistic, modern",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, extra limbs, low contrast, digital art, photography",
+                        "guidance": 2.7,
+                        "cfg": 1,
+                        "steps": 32,
+                        "width": 768,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "pop_art",
+                    "name": "Pop Art",
+                    "settings": {
+                        "prompt": "Andy Warhol pop art style, bold color blocks, high contrast screenprint effect, repeat pattern potential, transform into iconic pop art",
+                        "prompt_2": "Roy Lichtenstein influence, commercial art aesthetic, saturated CMYK colors, cultural icon treatment",
+                        "negative_prompt": "subtle gradients, realistic shading, muted colors, traditional composition",
+                        "negative_prompt_2": "fine art pretension, complex details, natural colors",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 30,
+                        "guidance": 3,
+                        "cfg": 1.15,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "double_exposure",
+                    "name": "Double Exposure",
+                    "settings": {
+                        "prompt": "artistic double exposure effect, silhouette filled with secondary scene, dreamy overlay blending, preserve main subject as primary layer",
+                        "prompt_2": "transparent layering, poetic visual metaphor, professional photography technique, seamless integration",
+                        "negative_prompt": "harsh edges, poor blending, cluttered composition, conflicting elements",
+                        "negative_prompt_2": "opaque overlays, misaligned layers, amateur execution",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 35,
+                        "guidance": 3.2,
+                        "cfg": 1.2,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Mood & Vintage",
+            "profiles": [
+                {
+                    "id": "vintage",
+                    "name": "Vintage",
+                    "settings": {
+                        "prompt": "authentic vintage film photography look, organic grain structure, nostalgic color grading with slight fade, subtle vignetting",
+                        "prompt_2": "35mm film aesthetic, Kodak Portra 400 color science, timeless quality",
+                        "negative_prompt": "digital clarity, neon colors, HDR processing, modern sharpness, jpeg artefacts, distorted features",
+                        "negative_prompt_2": "perfect pixels, contemporary editing, blur, color banding",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 33,
+                        "guidance": 3,
+                        "cfg": 1.2,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "art_deco",
+                    "name": "Art Deco",
+                    "settings": {
+                        "prompt": "Art Deco style transformation, geometric patterns, gold and black palette, 1920s glamour, transform into Great Gatsby era elegance",
+                        "prompt_2": "streamlined forms, metallic accents, symmetric composition, luxury materials, Jazz Age sophistication",
+                        "negative_prompt": "organic shapes, rough textures, casual elements, contemporary style",
+                        "negative_prompt_2": "natural patterns, rustic materials, asymmetric design",
+                        "width": 896,
+                        "height": 1152,
+                        "adjust_resolution": true,
+                        "steps": 34,
+                        "guidance": 3.5,
+                        "cfg": 1.25,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "noir_detective",
+                    "name": "Noir Detective",
+                    "settings": {
+                        "prompt": "1940s film noir aesthetic, dramatic venetian blind shadows, cigarette smoke atmosphere, high contrast black and white, preserve subject as noir character",
+                        "prompt_2": "detective story mood, rain-wet streets, vintage Hollywood cinematography, mystery atmosphere",
+                        "negative_prompt": "color elements, modern settings, bright lighting, contemporary fashion",
+                        "negative_prompt_2": "digital clarity, happy mood, daylight scenes",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 32,
+                        "guidance": 3.5,
+                        "cfg": 1.25,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "steampunk",
+                    "name": "Steampunk",
+                    "settings": {
+                        "prompt": "Victorian steampunk transformation, brass gears and copper pipes, steam-powered machinery, goggles and corsets, preserve subject in alternate history",
+                        "prompt_2": "sepia tones with metallic highlights, industrial revolution aesthetic, clockwork details, airship atmosphere",
+                        "negative_prompt": "modern technology, plastic materials, neon colors, minimalist design",
+                        "negative_prompt_2": "contemporary fashion, digital displays, sleek surfaces",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 36,
+                        "guidance": 3.8,
+                        "cfg": 1.3,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "retro_film_grain",
+                    "name": "Retro Film Grain",
+                    "settings": {
+                        "prompt": "vintage photo, 1970s film grain, warm tones, slightly faded, soft highlight rolloff, what not to change: main subject and composition",
+                        "prompt_2": "subtle grain, analog style, nostalgic look, Kodak Ektachrome color science",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish, digital look",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast, sharp digital details",
+                        "guidance": 2.6,
+                        "cfg": 1,
+                        "steps": 28,
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "classic_black_and_white",
+                    "name": "Classic B&W",
+                    "settings": {
+                        "prompt": "timeless black and white, high contrast, rich midtones, detailed shadows, no color, what not to change: scene structure",
+                        "prompt_2": "film noir, deep blacks, crisp whites, Ansel Adams zone system",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish, color, sepia",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast, muddy greys",
+                        "guidance": 3,
+                        "cfg": 1,
+                        "steps": 32,
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "monochrome",
+                    "name": "Monochrome",
+                    "settings": {
+                        "prompt": "convert to fine art black and white photography, rich tonal range from deep blacks to bright whites, film noir aesthetic, high contrast",
+                        "prompt_2": "Ansel Adams zone system, silver gelatin print quality, dramatic contrast, detailed shadows",
+                        "negative_prompt": "color artifacts, muddy gray tones, flat contrast, washed-out, sepia",
+                        "negative_prompt_2": "color bleeding, poor tonal separation, low contrast",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 32,
+                        "guidance": 3.2,
+                        "cfg": 1.2,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Landscape & Scenery",
+            "profiles": [
+                {
+                    "id": "landscape",
+                    "name": "Landscape",
+                    "settings": {
+                        "prompt": "enhance landscape photography, dramatic cloud formations, golden hour warmth, preserve natural composition",
+                        "prompt_2": "National Geographic standard, epic vista scope, atmospheric perspective depth",
+                        "negative_prompt": "flat lighting, dull colors, haze, urban intrusion, oversaturation, jpeg artefacts, low detail, noisy",
+                        "negative_prompt_2": "blown highlights, crushed shadows, blur, washed-out",
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "steps": 34,
+                        "guidance": 3.2,
+                        "cfg": 1.15,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "golden_hour_glow",
+                    "name": "Golden Hour",
+                    "settings": {
+                        "prompt": "outdoor scene during sunset golden hour, warm light, glowing highlights, natural skin, what not to change: original composition and subjects",
+                        "prompt_2": "backlit, cinematic, soft shadows, lens flare",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish, harsh shadows, daytime, blue light",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast",
+                        "guidance": 3,
+                        "cfg": 1,
+                        "steps": 32,
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "moody_cinematic",
+                    "name": "Moody Cinematic",
+                    "settings": {
+                        "prompt": "cinematic frame, moody atmosphere, dramatic color grading with deep blues and oranges, filmic contrast, what not to change: scene structure and subject identity",
+                        "prompt_2": "soft haze, sharp focus on subject, enhanced drama, anamorphic look",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish, bright, happy, flat lighting",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast",
+                        "guidance": 3.7,
+                        "cfg": 1,
+                        "steps": 32,
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "night_cityscape",
+                    "name": "Night Cityscape",
+                    "settings": {
+                        "prompt": "night city skyline, glowing windows, crisp neon signs, sharp reflections on wet streets, deep shadows, clean architectural lines",
+                        "prompt_2": "high clarity, cinematic, enhanced detail, long exposure look",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish, daytime, motion blur",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, extra limbs, low contrast, hazy",
+                        "guidance": 3.6,
+                        "cfg": 1,
+                        "steps": 32,
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "tilt_shift",
+                    "name": "Tilt Shift",
+                    "settings": {
+                        "prompt": "tilt-shift photography effect, miniature world illusion, selective focus with blur gradient, toy-like saturation, transform into diorama scene",
+                        "prompt_2": "model railway aesthetic, heightened colors, shallow depth of field, whimsical scale distortion",
+                        "negative_prompt": "full sharp focus, natural scale, muted colors, realistic perspective",
+                        "negative_prompt_2": "normal depth of field, true-to-life proportions",
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "steps": 30,
+                        "guidance": 2.8,
+                        "cfg": 1.1,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "infrared",
+                    "name": "Infrared",
+                    "settings": {
+                        "prompt": "infrared photography effect, white foliage with dark skies, ethereal false color mapping, otherworldly landscape transformation",
+                        "prompt_2": "surreal color inversion, heat signature aesthetic, scientific imaging beauty, unique spectrum shift",
+                        "negative_prompt": "normal color spectrum, standard photography, realistic vegetation colors",
+                        "negative_prompt_2": "conventional sky colors, typical green plants",
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "steps": 32,
+                        "guidance": 3.5,
+                        "cfg": 1.25,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Portrait & People",
+            "profiles": [
+                {
+                    "id": "portrait",
+                    "name": "Portrait",
+                    "settings": {
+                        "prompt": "enhance portrait photography, natural skin texture with subtle retouching, professional studio lighting, preserve exact identity and expression",
+                        "prompt_2": "Vogue magazine clarity, flattering Rembrandt lighting, authentic skin tones",
+                        "negative_prompt": "plastic skin, altered facial features, overprocessed smoothing, uncanny valley, jpeg artefacts, washed-out colours, distorted features",
+                        "negative_prompt_2": "harsh shadows, unnatural skin texture, aggressive beauty filters, blur, color banding",
+                        "width": 768,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 32,
+                        "guidance": 3.2,
+                        "cfg": 1.1,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "vivid_portraiture",
+                    "name": "Vivid Portrait",
+                    "settings": {
+                        "prompt": "hyper-realistic portrait, vibrant lighting, accurate skin tones, cinematic mood, eyes in sharp focus, background soft blur, what not to change: subject's face and identity",
+                        "prompt_2": "masterpiece, sharp details, color graded, enhanced clarity",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast",
+                        "guidance": 3.2,
+                        "cfg": 1,
+                        "steps": 32,
+                        "width": 768,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "magazine_editorial",
+                    "name": "Magazine Editorial",
+                    "settings": {
+                        "prompt": "high-fashion editorial, clean lines, professional retouching, balanced colors, dramatic lighting, bold composition, what not to change: subject's face and clothes",
+                        "prompt_2": "crisp detail, balanced tones, masterpiece",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast",
+                        "guidance": 3.8,
+                        "cfg": 1,
+                        "steps": 32,
+                        "width": 768,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "soft_pastel_portrait",
+                    "name": "Soft Pastel",
+                    "settings": {
+                        "prompt": "portrait in a soft pastel palette, gentle lighting, smooth color gradients, airy and dreamy atmosphere, what not to change: subject's face",
+                        "prompt_2": "delicate skin tones, dreamy quality, subtle tones, high-key lighting",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish, high contrast, dark shadows",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, extra limbs, low contrast",
+                        "guidance": 2.9,
+                        "cfg": 1,
+                        "steps": 28,
+                        "width": 768,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Everyday Enhancement",
+            "profiles": [
+                {
+                    "id": "general_style",
+                    "name": "General",
+                    "settings": {
+                        "prompt": "enhance the scene with vibrant colors and beautiful lighting, maintain original composition and subject identity, professional quality",
+                        "prompt_2": "sharp details, masterpiece quality, enhanced clarity",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, extra limbs, low contrast",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 32,
+                        "guidance": 3.8,
+                        "cfg": 1,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "faithful",
+                    "name": "Minimal",
+                    "settings": {
+                        "prompt": "subtle enhancement only, correct minor noise and lighting, maintain exact original appearance, preserve all details with minimal processing",
+                        "prompt_2": "true to original, clean result, balanced tones",
+                        "negative_prompt": "artistic deviation, heavy stylization, dramatic changes, color shift, distortion",
+                        "negative_prompt_2": null,
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 28,
+                        "guidance": 2,
+                        "cfg": 1,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": false,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "hyper_real_clean_edit",
+                    "name": "Hyper Real",
+                    "settings": {
+                        "prompt": "ultra-clean photo edit, neutral colors, extremely sharp details, perfect skin, flawless professional finish, what not to change: subject's facial features and identity",
+                        "prompt_2": "studio lighting, high clarity, commercial quality, tack sharp",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, unnatural skin, pixelated, noisy, compression artefacts, cartoonish, blur, softness",
+                        "negative_prompt_2": "posterized, color banding, excessive smoothing, extra limbs, low contrast",
+                        "guidance": 4.2,
+                        "cfg": 1,
+                        "steps": 35,
+                        "width": 768,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "ultra_hq_style_1",
+                    "name": "Ultra HQ v1",
+                    "settings": {
+                        "prompt": "enhance to ultra high quality, professional medium format camera standard, maintain exact subject features, flawless detail clarity",
+                        "prompt_2": "8K resolution clarity, advanced lighting simulation, cinematic grade, sharp details, masterpiece quality",
+                        "negative_prompt": "soft focus, amateur look, flat lighting, chromatic aberration, jpeg artefacts, washed-out colours, distorted features, low detail, noisy",
+                        "negative_prompt_2": "lens distortion, motion blur, compression artifacts, color banding, oversaturated",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 42,
+                        "guidance": 6.2,
+                        "cfg": 1.3,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "ultra_hq_style_2",
+                    "name": "Ultra HQ v2",
+                    "settings": {
+                        "prompt": "ultra-detailed cinematic still, razor-sharp edges, subtle film emulsion texture, rich micro-contrast throughout, photorealistic restoration",
+                        "prompt_2": "IMAX camera clarity, volumetric rim lighting, photoreal surface texturing",
+                        "negative_prompt": "soft focus, skin smoothing, jpeg artefacts, watermark, grain, washed-out colours, distorted features, low detail, oversaturated, noisy",
+                        "negative_prompt_2": "posterization, color banding, oversharpening halos, blur, unnatural skin",
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "steps": 38,
+                        "guidance": 6,
+                        "cfg": 1.4,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "extreme_hdr_pop",
+                    "name": "HDR Pop",
+                    "settings": {
+                        "prompt": "ultra-vibrant HDR effect, extreme dynamic range, saturated colors, punchy highlights and deep shadows, surreal detail, what not to change: composition",
+                        "prompt_2": "hyper-real, crisp edges, enhanced depth, dramatic look",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, unnatural skin, pixelated, noisy, compression artefacts, cartoonish, flat, dull, monochrome, realistic",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, extra limbs, low contrast",
+                        "guidance": 4.4,
+                        "cfg": 1,
+                        "steps": 32,
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                },
+                {
+                    "id": "fast",
+                    "name": "Fast Preview",
+                    "settings": {
+                        "prompt": "quick enhancement, improve lighting and colors, preserve original composition",
+                        "prompt_2": "clean result, balanced exposure",
+                        "negative_prompt": "artifacts, noise, distortion, blur, watermark, text",
+                        "negative_prompt_2": null,
+                        "width": 1024,
+                        "height": 768,
+                        "adjust_resolution": true,
+                        "steps": 20,
+                        "guidance": 2.5,
+                        "cfg": 1,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": false,
+                        "use_specific_seed": false
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Product & Detail",
+            "profiles": [
+                {
+                    "id": "product",
+                    "name": "Product",
+                    "settings": {
+                        "prompt": "enhance for e-commerce catalog, perfect studio lighting, color-accurate reproduction, tack-sharp detail, clean white background",
+                        "prompt_2": "professional product photography, luxury brand presentation, flawless finish",
+                        "negative_prompt": "harsh shadows, unwanted reflections, background clutter, color cast, jpeg artefacts, low detail, noisy",
+                        "negative_prompt_2": "uneven exposure, amateur lighting setup, dust or imperfections, blur, distortion",
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "steps": 35,
+                        "guidance": 6.5,
+                        "cfg": 1.2,
+                        "prompt_2_enabled": true,
+                        "negative_prompt_enabled": true,
+                        "negative_prompt_2_enabled": true,
+                        "use_specific_seed": false
+                    }
+                },
+                {
+                    "id": "ultra_clean_product",
+                    "name": "Clean Product",
+                    "settings": {
+                        "prompt": "flawless product photo, pure white background, perfect focus, balanced commercial lighting, commercial clarity, what not to change: the product itself",
+                        "prompt_2": "studio shot, crisp lines, high definition, color accurate",
+                        "negative_prompt": "jpeg artefacts, grid pattern, washed-out colours, distorted features, low detail, oversaturated, pixelated, noisy, compression artefacts, cartoonish, shadows, background clutter",
+                        "negative_prompt_2": "blur, posterized, color banding, excessive smoothing, washed-out, low contrast, dust, scratches",
+                        "guidance": 6.5,
+                        "cfg": 1,
+                        "steps": 35,
+                        "width": 1024,
+                        "height": 1024,
+                        "adjust_resolution": true,
+                        "output_type": "pil",
+                        "seed": ""
+                    }
+                }
+            ]
+        }
+    ]
+}
