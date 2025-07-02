@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURATION ---
-    const API_BASE_URL = 'http://127.0.0.1:5000';
     const CUSTOM_PROFILES_KEY = 'aiStylizerCustomProfiles';
     const POLLING_INTERVAL_MS = 2000;
     const POLLING_TIMEOUT_MS = 300000;
@@ -49,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const accordionContainer = document.getElementById('style-profiles-accordion');
 
     // --- STATE MANAGEMENT ---
+    let API_BASE_URL; // Will be set dynamically from the backend
     let originalFile = null;
     let history = [];
     let historyIndex = -1;
@@ -253,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
         imagePreview.style.display = 'none';
         uploadArea.classList.remove('disabled');
         cancelUploadBtn.style.display = 'none';
+        cancelUploadBtn.disabled = false; // Ensure it's re-enabled on reset
         applyBtn.disabled = true;
         downloadBtn.disabled = true;
         updateHistoryButtons();
@@ -288,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loader.style.display = 'flex';
         loaderText.innerHTML = "Submitting job to the server...";
         applyBtn.disabled = true;
+        cancelUploadBtn.disabled = true; // --- MODIFICATION: Disable cancel button on apply
         const formData = new FormData();
         formData.append('image', originalFile);
         const settings = getCurrentSettings();
@@ -319,6 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast(`Error: ${error.message}`);
             loader.style.display = 'none';
             applyBtn.disabled = false;
+            cancelUploadBtn.disabled = false; // --- MODIFICATION: Re-enable cancel button on error
         }
     };
 
@@ -330,6 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast("Error: The request timed out. The server might be too busy.");
                 loader.style.display = 'none';
                 applyBtn.disabled = false;
+                cancelUploadBtn.disabled = false; // --- MODIFICATION: Re-enable cancel button on timeout
                 return;
             }
             try {
@@ -359,6 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(`Error: ${error.message}`);
                 loader.style.display = 'none';
                 applyBtn.disabled = false;
+                cancelUploadBtn.disabled = false; // --- MODIFICATION: Re-enable cancel button on error
             }
         }, POLLING_INTERVAL_MS);
     };
@@ -385,6 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             loader.style.display = 'none';
             applyBtn.disabled = false;
+            cancelUploadBtn.disabled = false; // --- MODIFICATION: Re-enable cancel button on completion
             localStorage.removeItem('activeJobId');
         }
     };
@@ -482,6 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast("Checking status of a previous job...", true);
             loader.style.display = 'flex';
             applyBtn.disabled = true;
+            cancelUploadBtn.disabled = true; // --- MODIFICATION: Also disable here
             originalFile = new File([""], "placeholder.txt");
             pollForJobCompletion(existingJobId);
         }
@@ -523,6 +530,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function initializeApp() {
         try {
+            // Fetch dynamic configuration from the backend first
+            const configResponse = await fetch('/config');
+            if (!configResponse.ok) {
+                throw new Error(`Failed to load configuration from server: ${configResponse.statusText}`);
+            }
+            const appConfig = await configResponse.json();
+            API_BASE_URL = appConfig.apiBaseUrl;
+
+            // Now, proceed with the rest of the initialization
             const response = await fetch('/static/profiles.json');
             if (!response.ok) throw new Error(`Failed to load profiles.json: ${response.statusText}`);
             appData = await response.json();

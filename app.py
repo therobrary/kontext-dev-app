@@ -7,6 +7,7 @@
 # and not designed to be shared across multiple processes. For multi-worker scalability,
 # a more robust task queue like Celery with Redis or RabbitMQ would be required.
 
+import argparse
 import logging
 import os
 import sys
@@ -39,12 +40,10 @@ logger.add(
 # Intercept standard logging to capture logs from other libraries (like Gunicorn)
 class InterceptHandler(logging.Handler):
     def emit(self, record):
-        # --- START CHANGE ---
         # Filter out successful (INFO level) status polls to avoid cluttering the logs.
         # We check the message content and the log level. Errors on this endpoint will still be logged.
         if "GET /status/" in record.getMessage() and record.levelno == logging.INFO:
             return
-        # --- END CHANGE ---
 
         # Get corresponding Loguru level if it exists
         try:
@@ -354,6 +353,16 @@ def image_generation_worker():
 
 
 # --- API Endpoints ---
+@app.route("/config", methods=["GET"])
+def get_config():
+    """Provides frontend configuration, including the dynamic API base URL."""
+    # request.host_url provides the root URL of the app, e.g., 'http://127.0.0.1:5000/'
+    # We rstrip('/') to remove the trailing slash for clean concatenation in the frontend.
+    base_url = request.host_url.rstrip("/")
+    logger.debug(f"Providing config with API_BASE_URL: {base_url}")
+    return jsonify({"apiBaseUrl": base_url})
+
+
 @app.route("/process-image", methods=["POST"])
 def generate_image_endpoint():
     """
@@ -496,6 +505,18 @@ def internal_server_error(error):
 
 # --- Main Execution ---
 if __name__ == "__main__":
+    # 1. Set up the argument parser
+    parser = argparse.ArgumentParser(
+        description="Run the Flask image generation server."
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=5000,
+        help="The port to run the Flask application on (default: 5000)",
+    )
+    args = parser.parse_args()
+
     # Start the background worker thread.
     # The `daemon=True` ensures the thread will exit when the main program exits.
     worker_thread = threading.Thread(target=image_generation_worker, daemon=True)
@@ -509,10 +530,11 @@ if __name__ == "__main__":
     def index():
         return send_file("static/index.html")
 
-    logger.info("Starting Flask development server.")
+    logger.info(f"Starting Flask development server on port {args.port}.")
     logger.warning(
         "This is a development server. For production, use a WSGI server like Gunicorn."
     )
+    # 2. Use the parsed port argument in app.run()
     app.run(
-        host="0.0.0.0", port=5000, debug=False
+        host="0.0.0.0", port=args.port, debug=False
     )  # Debug mode should be False for this setup

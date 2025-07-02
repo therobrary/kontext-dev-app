@@ -550,3 +550,119 @@ h2 {
     z-index: 100;
     display: none;
 }
+
+/*
+=====================================
+--- MOBILE RESPONSIVENESS ADDED ---
+=====================================
+These rules are added to improve the layout on smaller screens
+without removing or changing the original desktop-first design.
+*/
+
+/* For tablets and larger phones (up to 768px wide) */
+@media (max-width: 768px) {
+    body {
+        /* Reduce overall padding to give content more space */
+        padding: 15px;
+    }
+
+    .main-content,
+    .controls-panel {
+        /* Reduce padding inside the main containers */
+        padding: 20px;
+    }
+
+    h1 {
+        /* Make the main title slightly smaller */
+        font-size: 2.2em;
+    }
+
+    #upload-area {
+        /* Less padding in the drag-and-drop area to save space */
+        padding: 30px;
+        margin-bottom: 10px;
+    }
+
+    #image-preview-wrapper {
+        /* A more reasonable minimum height for tablet-sized viewports */
+        min-height: 300px;
+        margin-top: 20px;
+    }
+}
+
+/* For smaller mobile phones (up to 480px wide) */
+@media (max-width: 480px) {
+    body {
+        /* Further reduce padding for very small screens */
+        padding: 10px;
+    }
+
+    .app-container {
+        /* Reduce the gap between main content and controls panel */
+        gap: 20px;
+    }
+
+    .main-content,
+    .controls-panel {
+        /* Use minimal padding on small mobile */
+        padding: 15px;
+    }
+
+    h1 {
+        /* Further reduce the main title font size */
+        font-size: 1.8em;
+        margin-bottom: 15px;
+    }
+
+    h2 {
+        font-size: 1.25em;
+    }
+
+    #upload-area p {
+        font-size: 1em;
+    }
+
+    #image-preview-wrapper {
+        min-height: 250px;
+        margin-top: 20px;
+    }
+
+    /* Stack slider controls vertically for better usability */
+    .slider-container {
+        flex-direction: column;
+        align-items: stretch;
+        /* Make children full width */
+        gap: 10px;
+    }
+
+    .slider-container input[type="number"] {
+        /* Allow the number input to take the full width and center its text */
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Allow the resolution inputs to wrap onto the next line if needed */
+    .resolution-inputs {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* Stack the upload controls for a clean, single-column look */
+    .upload-controls {
+        flex-direction: column;
+        align-items: stretch;
+        /* Make buttons full-width for easy tapping */
+    }
+
+    /* Adjust the toast notification to fit better on narrow screens */
+    #error-toast {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        transform: none;
+        /* Reset the horizontal centering transform */
+        padding: 15px;
+        text-align: center;
+    }
+}
