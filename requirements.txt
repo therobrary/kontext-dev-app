@@ -14,7 +14,6 @@ dfloat11==0.2.0
 diffusers @ git+https://github.com/huggingface/diffusers.git@21543de571f77cf14b850710529891dbc50dc83c
 fastrlock==0.8.3
 filelock==3.18.0
-files-to-prompt-v2 @ file:///home/xmasterrrr/Dev/files-to-prompt
 flask==3.1.1
 flask-cors==6.0.1
 fsspec==2025.5.1
