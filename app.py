@@ -280,16 +280,6 @@ def job_cleanup_worker():
                 logger.info(f"Cleaning up {len(expired_jobs)} expired jobs...")
                 for job_id in expired_jobs:
                     job_to_delete = job_results[job_id]
-                    if "result_path" in job_to_delete:
-                        try:
-                            os.remove(job_to_delete["result_path"])
-                            logger.debug(
-                                f"Deleted result file: {job_to_delete['result_path']}"
-                            )
-                        except OSError as e:
-                            logger.warning(
-                                f"Could not delete result file {job_to_delete['result_path']}. Error: {e}"
-                            )
                     del job_results[job_id]
                 logger.info("Cleanup complete.")
 
