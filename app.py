@@ -499,6 +499,14 @@ def internal_server_error(error):
 
 
 # --- Main Execution ---
+# Start the background worker thread.
+# The `daemon=True` ensures the thread will exit when the main program exits.
+worker_thread = threading.Thread(target=image_generation_worker, daemon=True)
+worker_thread.start()
+
+cleanup_thread = threading.Thread(target=job_cleanup_worker, daemon=True)
+cleanup_thread.start()
+
 if __name__ == "__main__":
     # 1. Set up the argument parser
     parser = argparse.ArgumentParser(
@@ -512,13 +520,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # Start the background worker thread.
-    # The `daemon=True` ensures the thread will exit when the main program exits.
-    worker_thread = threading.Thread(target=image_generation_worker, daemon=True)
-    worker_thread.start()
-
-    cleanup_thread = threading.Thread(target=job_cleanup_worker, daemon=True)
-    cleanup_thread.start()
 
     # Serve the static frontend
     @app.route("/")
