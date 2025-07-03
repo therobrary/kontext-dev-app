@@ -80,12 +80,14 @@ class Config:
     CLEANUP_INTERVAL = int(os.getenv("CLEANUP_INTERVAL", 300))  # 5 minutes
     # Folder to store generated images
     RESULTS_FOLDER = os.getenv("RESULTS_FOLDER", "generated_images")
+    # HF Token
+    HF_TOKEN = os.getenv("HUGGING_FACE_HUB_TOKEN", None)
     # Default generation parameters
     DEFAULT_WIDTH = 1024
     DEFAULT_HEIGHT = 1024
     DEFAULT_STEPS = 28
     DEFAULT_GUIDANCE_SCALE = 2.5
-    DEFAULT_TRUE_CFG_SCALE = 1.5
+    DEFAULT_TRUE_CFG_SCALE = 1.0
 
 
 # --- Model Initialization ---
@@ -108,14 +110,28 @@ try:
     from dfloat11 import DFloat11Model
     from diffusers import FluxKontextPipeline
 
-    pipe = FluxKontextPipeline.from_pretrained(
-        "black-forest-labs/FLUX.1-Kontext-dev", torch_dtype=TORCH_DTYPE
-    )
-    DFloat11Model.from_pretrained(
-        "DFloat11/FLUX.1-Kontext-dev-DF11",
-        device="cpu",  # DFloat11 specific, may need CPU
-        bfloat16_model=pipe.transformer,
-    )
+    if Config.HF_TOKEN:
+        pipe = FluxKontextPipeline.from_pretrained(
+            "black-forest-labs/FLUX.1-Kontext-dev",
+            torch_dtype=TORCH_DTYPE,
+            token=Config.HF_TOKEN,
+        )
+        DFloat11Model.from_pretrained(
+            "DFloat11/FLUX.1-Kontext-dev-DF11",
+            device="cpu",  # DFloat11 specific, may need CPU
+            bfloat16_model=pipe.transformer,
+            token=Config.HF_TOKEN,
+        )
+    else:
+        pipe = FluxKontextPipeline.from_pretrained(
+            "black-forest-labs/FLUX.1-Kontext-dev",
+            torch_dtype=TORCH_DTYPE,
+        )
+        DFloat11Model.from_pretrained(
+            "DFloat11/FLUX.1-Kontext-dev-DF11",
+            device="cpu",  # DFloat11 specific, may need CPU
+            bfloat16_model=pipe.transformer,
+        )
 
     if DEVICE == "cuda":
         # Offloading is essential for consumer GPUs with limited VRAM

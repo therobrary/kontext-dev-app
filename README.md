@@ -14,26 +14,46 @@ This is not just a Ghibli-fier! The app has dozens of style profiles and advance
   - **Undo/Redo** history for iterative editing.
   - Advanced controls for prompts, inference steps, guidance scales, and seeds.
 - **Enhanced Model Pipeline**: Utilizes `black-forest-labs/FLUX.1-Kontext-dev` augmented with `DFloat11` for high-quality, efficient image generation.
-- **Efficient VRAM Usage**: Automatically enables model CPU offloading on NVIDIA GPUs to run on consumer cards with less VRAM.
+- **Efficient VRAM Usage**: Run the full, lossless model on consumer hardware. By using a `DFloat11` quantization algorithm, **we cut VRAM requirements by ~30% without sacrificing quality**. This makes the model possible to run with high-end **consumer GPUs** like the RTX 3090 and 4090.
 - **Environment-based Configuration**: Easily manage settings like queue size, file storage, and device selection using a `.env` file.
 - **Persistent Storage & Cleanup**: Generated images are saved to disk, with an automatic background worker to clean up old job data and files to save space.
 - **Intelligent Logging**: Uses `Loguru` for clean, readable logs and automatically filters out noisy status checks to keep the console tidy.
 - **Simplified Architecture**: No external dependencies like Redis or Celery. Just Python and the required ML libraries.
 - **Asynchronous Task Queue**: Uses a simple, thread-safe, in-memory queue to handle image generation jobs one by one, preventing server overload.
-- **GPU/CPU Agnostic**: Automatically uses an available NVIDIA GPU and gracefully falls back to the CPU (note: CPU is significantly slower).
+
+## Coming Up: Project Roadmap
+
+Here's a look at the features and improvements planned for the near future:
+
+**High Priority:**
+
+- **Expanded Model Support:**
+  - **GGUF & Advanced Quantization:** Introduce support for GGUF model formats and automatically select the best quantization level based on detected hardware. This will significantly lower VRAM requirements and broaden hardware compatibility.
+- **`uv` Project Integration:** Fully transition the project to use `uv` for dependency and environment management, leveraging its speed.
+
+**Core Enhancements:**
+
+- **More Styling Profiles:** Add a new wave of creative and visual style presets to the frontend.
+- **Windows Support:** Official installation and setup instructions for Windows users.
+- **Dockerization:** Provide a `Dockerfile` for easy, one-command deployment in a containerized environment.
 
 ## Quick Start
 
 ### Requirements
 
+**At this time, installation is supported exclusively on Linux.**
+
 - **Python 3.11+**
-  - `pip` or `uv` (Python package installer; `uv` is recommended for speed)
-- **NVIDIA GPU** (recommended for speed; CPU fallback supported)
-  - **~21GB VRAM** is preferred for the best performance.
+  - `uv` or `pip` (Python package installer; `uv` is recommended for speed)
+- **NVIDIA GPU**
+  - **~21GB VRAM** is needed for the current implementation, which uses `DFloat11` quantization.
+  - Support for additional quantizations and CPU offloading will be available soon.
 - Modern web browser (Chrome, Firefox, Edge, etc.)
 - Some images to Ghiblify!
 
 ## Setup & Installation
+
+I recommend using `uv`. If you don't have `uv`, install it with `curl -LsSf https://astral.sh/uv/install.sh | sh`. You may need to restart your terminal.
 
 ### 1. Clone the Project
 
@@ -46,11 +66,9 @@ cd 4o-ghibli-at-home
 
 A virtual environment is crucial for isolating project dependencies.
 
-I recommend using `uv`. If you don't have `uv`, install it with `curl -LsSf https://astral.sh/uv/install.sh | sh` (macOS/Linux) or `powershell -c "irm https://astral.sh/uv/install.ps1 | iex"` (Windows). You may need to restart your terminal.
-
 ```bash
 # Using uv (Recommended)
-uv venv
+uv venv .vemv --python 3.11
 
 # Or using Python's built-in venv
 python3.11 -m venv .venv
@@ -59,57 +77,31 @@ python3.11 -m venv .venv
 After creating the environment, activate it:
 
 ```bash
-# Activate (Windows)
-.venv\Scripts\activate
-
-# Activate (macOS/Linux)
+# Activate
 source .venv/bin/activate
 ```
 
 ### 3. Install Dependencies
 
-Install the Python dependencies from `requirements.txt`.
-
-#### Option A: Using `uv`
+Install the Python dependencies from `requirements.txt` into your activated environment.
 
 ```bash
-# Install dependencies into your activated environment
+# Using uv (Recommended)
 uv pip install -r requirements.txt
-```
 
-#### Option B: Using `pip`
-
-```bash
+# Using Python's built-in pip
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
 ### 4. Configure Your Environment
 
-The application is now configured using an environment file.
+The application is configured using an environment file.
 
 1. Rename `.env_template` to `.env` in the project's root directory.
-2. Edit the contents of the example below into your new `.env` file and adjust the values as needed.
+2. Edit the contents of your new `.env` file and adjust the values as needed.
 
-```ini
-# .env.example - Copy this to a new file named .env
-
-# --- Server Configuration ---
-# Maximum number of jobs to hold in the queue.
-MAX_QUEUE_SIZE=10
-# Maximum upload size in Megabytes (MB).
-MAX_UPLOAD_MB=25
-# Folder to store generated images. Will be created automatically.
-RESULTS_FOLDER="generated_images"
-
-# --- Job & Resource Management ---
-# Device to run the model on ('cuda', 'cpu'). Defaults to 'cuda' if available.
-PYTORCH_DEVICE="cuda"
-# How long to keep job results in memory and on disk (in seconds). Default is 600 (10 minutes).
-JOB_RESULT_TTL=600
-# How often the cleanup worker runs (in seconds). Default is 300 (5 minutes).
-CLEANUP_INTERVAL=300
-```
+**Notice:** If you haven't already logged in using `huggingface-cli login`, you must set `HUGGING_FACE_HUB_TOKEN` in your `.env` file with a token generated in your Hugging Face account settings. This is required to download gated models from Hugging Face.
 
 ## How to Run
 
@@ -130,6 +122,16 @@ The application runs with a single command, which starts the web server and the 
     # Increase --threads for more concurrent I/O, and --timeout for long-running jobs.
     gunicorn --workers 1 --threads 4 --timeout 600 -b 0.0.0.0:5000 app:app
     ```
+
+### App Options
+
+You can customize the server port by using the `--port` option when starting the app. For example, to run the server on port 5555:
+
+```bash
+python3.11 app.py --port 5555
+```
+
+By default, the application runs on port 5000 if no `--port` argument is provided.
 
 ## Open the App
 
