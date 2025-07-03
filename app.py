@@ -108,13 +108,18 @@ try:
     from dfloat11 import DFloat11Model
     from diffusers import FluxKontextPipeline
 
+    hf_token = os.getenv("HUGGING_FACE_HUB_TOKEN")
+    
     pipe = FluxKontextPipeline.from_pretrained(
-        "black-forest-labs/FLUX.1-Kontext-dev", torch_dtype=TORCH_DTYPE
+        "black-forest-labs/FLUX.1-Kontext-dev", 
+        torch_dtype=TORCH_DTYPE, 
+        use_auth_token=hf_token
     )
     DFloat11Model.from_pretrained(
         "DFloat11/FLUX.1-Kontext-dev-DF11",
         device="cpu",  # DFloat11 specific, may need CPU
         bfloat16_model=pipe.transformer,
+        use_auth_token=hf_token
     )
 
     if DEVICE == "cuda":
