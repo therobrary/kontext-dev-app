@@ -501,11 +501,16 @@ def internal_server_error(error):
 # --- Main Execution ---
 # Start the background worker thread.
 # The `daemon=True` ensures the thread will exit when the main program exits.
+
 worker_thread = threading.Thread(target=image_generation_worker, daemon=True)
 worker_thread.start()
 
 cleanup_thread = threading.Thread(target=job_cleanup_worker, daemon=True)
 cleanup_thread.start()
+
+@app.route("/")
+def index():
+    return send_file("static/index.html")
 
 if __name__ == "__main__":
     # 1. Set up the argument parser
@@ -522,9 +527,7 @@ if __name__ == "__main__":
 
 
     # Serve the static frontend
-    @app.route("/")
-    def index():
-        return send_file("static/index.html")
+
 
     logger.info(f"Starting Flask development server on port {args.port}.")
     logger.warning(
