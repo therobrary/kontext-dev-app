@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURATION ---
     const CUSTOM_PROFILES_KEY = 'aiStylizerCustomProfiles';
-    const JOB_QUEUE_KEY = 'aiStylizerJobQueue'; // Key for storing job IDs
-    const POLLING_INTERVAL_MS = 3000; // Check status every 3 seconds
+    const JOB_QUEUE_KEY = 'aiStylizerJobQueue'; 
+    const POLLING_INTERVAL_MS = 3000;
+    const LOG_POLLING_INTERVAL_MS = 5000; // Poll logs every 5 seconds
 
     // --- DOM ELEMENT REFERENCES ---
     const uploadArea = document.getElementById('upload-area');
@@ -48,6 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Job Queue elements
     const jobListContainer = document.getElementById('job-list');
     const jobTemplate = document.getElementById('job-template');
+    // Log elements
+    const celeryLogContent = document.getElementById('celery-log-content');
 
 
     // --- STATE MANAGEMENT ---
@@ -56,15 +59,40 @@ document.addEventListener('DOMContentLoaded', () => {
     let history = [];
     let historyIndex = -1;
     let masterPollingIntervalId = null;
+    let logPollingIntervalId = null;
     let appData = {};
     let profilesMap = new Map();
-    let activeJobs = new Map(); // Use a Map to hold job data { jobId -> { element, status } }
+    let activeJobs = new Map();
+
+    // --- LOG POLLING FUNCTIONS ---
+    const pollCeleryLog = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/celery-log`);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.log) {
+                    celeryLogContent.textContent = data.log;
+                    // Auto-scroll to the bottom
+                    celeryLogContent.scrollTop = celeryLogContent.scrollHeight;
+                } else if (data.error) {
+                    celeryLogContent.textContent = `Error fetching logs: ${data.error}`;
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching celery log:", error);
+            celeryLogContent.textContent = "Could not connect to log endpoint...";
+        }
+    };
+
+    const startLogPolling = () => {
+        if (logPollingIntervalId) clearInterval(logPollingIntervalId);
+        logPollingIntervalId = setInterval(pollCeleryLog, LOG_POLLING_INTERVAL_MS);
+        pollCeleryLog(); // Initial call
+    };
+
 
     // --- JOB QUEUE FUNCTIONS ---
 
-    /**
-     * Loads jobs from localStorage and populates the UI queue.
-     */
     const loadJobsFromStorage = () => {
         const storedJobs = JSON.parse(localStorage.getItem(JOB_QUEUE_KEY) || '[]');
         storedJobs.forEach(jobId => {
@@ -78,11 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    /**
-     * Saves the current list of active job IDs to localStorage.
-     */
     const saveJobsToStorage = () => {
-        // Only save jobs that are not in a final state
         const jobsToSave = Array.from(activeJobs.keys()).filter(jobId => {
             const job = activeJobs.get(jobId);
             return job.status !== 'SUCCESS' && job.status !== 'FAILURE';
@@ -90,11 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(JOB_QUEUE_KEY, JSON.stringify(jobsToSave));
     };
 
-    /**
-     * Creates and adds a new job item to the visual queue.
-     * @param {string} jobId - The ID of the new job.
-     * @param {string} [sourceImageUrl] - The data URL of the source image for the preview.
-     */
     const addJobToQueueUI = (jobId, sourceImageUrl) => {
         const templateContent = jobTemplate.content.cloneNode(true);
         const jobItem = templateContent.querySelector('.job-item');
@@ -108,18 +127,12 @@ document.addEventListener('DOMContentLoaded', () => {
         jobItem.querySelector('.job-id span').textContent = jobId.substring(0, 8) + '...';
         jobItem.querySelector('.job-status span').textContent = 'QUEUED';
         
-        // Add to the top of the list
         jobListContainer.prepend(jobItem);
 
         activeJobs.set(jobId, { element: jobItem, status: 'QUEUED' });
         saveJobsToStorage();
     };
 
-    /**
-     * Updates the UI for a specific job based on new status data.
-     * @param {string} jobId - The ID of the job to update.
-     * @param {object} statusData - The status data from the API.
-     */
     const updateJobUI = async (jobId, statusData) => {
         const job = activeJobs.get(jobId);
         if (!job || !job.element) return;
@@ -127,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const statusSpan = job.element.querySelector('.job-status span');
         const jobSpinner = job.element.querySelector('.job-spinner');
         const previewImg = job.element.querySelector('.job-preview img');
+        const downloadJobBtn = job.element.querySelector('.btn-download-job');
 
         job.status = statusData.status.toUpperCase();
         statusSpan.textContent = job.status;
@@ -138,37 +152,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'SUCCESS':
                 jobSpinner.style.display = 'none';
-                // Fetch the final image and display it as a thumbnail
                 try {
                     const resultResponse = await fetch(`${API_BASE_URL}/result/${jobId}`);
                     if (resultResponse.ok) {
                         const imageBlob = await resultResponse.blob();
-                        previewImg.src = URL.createObjectURL(imageBlob);
-                        // Make the completed job clickable to load into main view
-                        job.element.classList.add('clickable');
-                        job.element.addEventListener('click', () => {
-                           imagePreview.src = previewImg.src;
+                        const imageUrl = URL.createObjectURL(imageBlob);
+                        previewImg.src = imageUrl;
+                        
+                        downloadJobBtn.style.display = 'inline-block';
+                        downloadJobBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const a = document.createElement('a');
+                            a.href = imageUrl;
+                            a.download = `stylized-${jobId.substring(0,8)}.png`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                        });
+
+                        const previewContainer = job.element.querySelector('.job-preview');
+                        previewContainer.classList.add('clickable');
+                        previewContainer.addEventListener('click', async () => {
+                           imagePreview.src = imageUrl;
                            downloadBtn.disabled = false;
+                           const file = new File([imageBlob], `stylized-${jobId.substring(0,8)}.png`, { type: 'image/png' });
+                           originalFile = file;
+                           history = [imageUrl];
+                           historyIndex = 0;
+                           updateHistoryButtons();
                         });
                     }
                 } catch (e) {
                     console.error("Failed to load result image for job", jobId, e);
                     statusSpan.textContent = 'IMG FAILED';
                 }
-                saveJobsToStorage(); // Remove from active polling
+                saveJobsToStorage();
                 break;
             case 'FAILURE':
                 jobSpinner.style.display = 'none';
                 job.element.classList.add('failed');
-                statusSpan.textContent = `FAILED: ${statusData.error || 'Unknown'}`;
-                saveJobsToStorage(); // Remove from active polling
+                statusSpan.textContent = `FAILED`;
+                if(statusData.error) {
+                    job.element.title = statusData.error;
+                }
+                saveJobsToStorage();
                 break;
         }
     };
 
-    /**
-     * Starts a single interval to poll all active jobs.
-     */
     const startMasterPolling = () => {
         if (masterPollingIntervalId) {
             clearInterval(masterPollingIntervalId);
@@ -200,9 +231,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, POLLING_INTERVAL_MS);
     };
 
-
-    // --- CORE FUNCTIONS (MODIFIED) ---
-
     const applyEdits = async () => {
         if (!originalFile) {
             showToast("Please upload an image first.");
@@ -214,13 +242,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('image', originalFile);
         const settings = getCurrentSettings();
-        // Append all settings to formData
+        
         Object.keys(settings).forEach(key => {
-            // Handle specific cases like checkboxes
-            if (key.endsWith('_enabled')) {
-                if (settings[key]) formData.append(key, settings[key]);
-            } else {
-                 formData.append(key, settings[key]);
+            let value = settings[key];
+            if (typeof value === 'boolean') {
+                value = value ? 'true' : '';
+            }
+            if (value) {
+                formData.append(key, value);
             }
         });
         
@@ -238,7 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const jobData = await generateResponse.json();
             const jobId = jobData.job_id;
 
-            // Add to UI and start polling
             addJobToQueueUI(jobId, imagePreview.src);
             startMasterPolling();
 
@@ -251,48 +279,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- UNMODIFIED CORE FUNCTIONS ---
     const getCurrentSettings = () => ({
         prompt: promptInput.value,
-        prompt_2: prompt2Input.value,
-        prompt_2_enabled: prompt2Enabled.checked,
-        negative_prompt: negativePromptInput.value,
-        negative_prompt_enabled: negativePromptEnabled.checked,
-        negative_prompt_2: negativePrompt2Input.value,
-        negative_prompt_2_enabled: negativePrompt2Enabled.checked,
+        prompt_2: prompt2Enabled.checked ? prompt2Input.value : '',
+        negative_prompt: negativePromptEnabled.checked ? negativePromptInput.value : '',
+        negative_prompt_2: negativePrompt2Enabled.checked ? negativePrompt2Input.value : '',
         width: Number(widthInput.value),
         height: Number(heightInput.value),
-        adjust_resolution: adjustResolutionCheckbox.checked,
         num_inference_steps: Number(stepsSlider.value),
         guidance_scale: Number(guidanceSlider.value),
         true_cfg_scale: Number(cfgSlider.value),
-        seed: seedInput.value,
-        use_specific_seed: useSpecificSeedCheckbox.checked,
+        seed: useSpecificSeedCheckbox.checked ? seedInput.value : '',
     });
 
     const updateControlsUI = (settings) => {
         promptInput.value = settings.prompt || '';
         const setupOptional = (baseKey, inputEl, checkboxEl) => {
-            const enabledKey = `${baseKey}_enabled`;
             const value = settings[baseKey];
             inputEl.value = value || '';
-            if (settings.hasOwnProperty(enabledKey)) {
-                checkboxEl.checked = settings[enabledKey];
-            } else {
-                checkboxEl.checked = value !== null && value !== undefined && value !== '';
-            }
+            checkboxEl.checked = !!value;
             inputEl.disabled = !checkboxEl.checked;
         };
         setupOptional('prompt_2', prompt2Input, prompt2Enabled);
         setupOptional('negative_prompt', negativePromptInput, negativePromptEnabled);
         setupOptional('negative_prompt_2', negativePrompt2Input, negativePrompt2Enabled);
+        
         seedInput.value = settings.seed || '';
-        if (settings.hasOwnProperty('use_specific_seed')) {
-            useSpecificSeedCheckbox.checked = settings.use_specific_seed;
-        } else {
-            useSpecificSeedCheckbox.checked = !!settings.seed;
-        }
+        useSpecificSeedCheckbox.checked = !!settings.seed;
         seedInput.disabled = !useSpecificSeedCheckbox.checked;
+
         widthInput.value = settings.width || 1024;
         heightInput.value = settings.height || 1024;
         adjustResolutionCheckbox.checked = settings.adjust_resolution !== false;
@@ -303,8 +318,6 @@ document.addEventListener('DOMContentLoaded', () => {
         guidanceSlider.value = guidanceNumber.value = guidanceValue.textContent = settings.guidance_scale || 3.5;
         cfgSlider.value = cfgNumber.value = cfgValue.textContent = settings.true_cfg_scale || 1.5;
     };
-
-    const areSettingsEqual = (obj1, obj2) => JSON.stringify(obj1) === JSON.stringify(obj2);
 
     const maybeAdjustResolution = () => {
         if (adjustResolutionCheckbox.checked && imagePreview.src && imagePreview.naturalWidth > 0) {
@@ -335,23 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateControlsUI(settings);
         maybeAdjustResolution();
 
-        if (isUserDefaultLoad) {
-            setActiveProfileButton(null);
-        } else {
-            setActiveProfileButton(effectiveProfileKey);
-        }
-
-        customProfileSelect.value = "";
-        if (isUserDefaultLoad) {
-            const customProfiles = JSON.parse(localStorage.getItem(CUSTOM_PROFILES_KEY) || '{}');
-            const currentSettingsForCompare = getCurrentSettings();
-            for (const name in customProfiles) {
-                if (areSettingsEqual(currentSettingsForCompare, customProfiles[name])) {
-                    customProfileSelect.value = name;
-                    break;
-                }
-            }
-        }
+        setActiveProfileButton(isUserDefaultLoad ? null : effectiveProfileKey);
     };
 
     const saveDefaults = () => {
@@ -359,16 +356,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const userDefaults = getCurrentSettings();
         localStorage.setItem('userDefaultSettings', JSON.stringify(userDefaults));
         showToast("Your settings have been saved as the new default.", true);
-        showButtonFeedback(saveDefaultsBtn);
-        const customProfiles = JSON.parse(localStorage.getItem(CUSTOM_PROFILES_KEY) || '{}');
-        let matchingProfileName = null;
-        for (const profileName in customProfiles) {
-            if (areSettingsEqual(userDefaults, customProfiles[profileName])) {
-                matchingProfileName = profileName;
-                break;
-            }
-        }
-        customProfileSelect.value = matchingProfileName || "";
     };
 
     const resetToAppDefaults = () => {
@@ -376,7 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('userDefaultSettings');
         updateControlsUI(appData.app_defaults);
         setActiveProfileButton('ghibli_style_1');
-        customProfileSelect.value = "";
         showToast("Settings have been reset to app defaults.", true);
     };
 
@@ -407,7 +393,6 @@ document.addEventListener('DOMContentLoaded', () => {
         customProfileSelect.value = name;
         saveProfileNameInput.value = '';
         showToast(`Profile "${name}" saved.`, true);
-        showButtonFeedback(saveProfileBtn, 'Saved!');
     };
 
     const loadCustomProfile = () => {
@@ -473,23 +458,8 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(file);
     };
 
-    const updateSourceImageFromHistory = async () => {
-        if (historyIndex < 0 || historyIndex >= history.length) return;
-        const currentImageUrl = history[historyIndex];
-        applyBtn.disabled = true;
-        try {
-            const response = await fetch(currentImageUrl);
-            const imageBlob = await response.blob();
-            originalFile = new File([imageBlob], `history-image-${Date.now()}.png`, { type: imageBlob.type || 'image/png' });
-            applyBtn.disabled = false;
-        } catch (error) {
-            console.error("Error updating source image from history:", error);
-            showToast("Error: Could not set the current image as the source for the next edit.");
-        }
-    };
-
     const downloadImage = () => {
-        if (!imagePreview.src || imagePreview.src.startsWith('data:')) {
+        if (!imagePreview.src) {
             showToast("There is no generated image to download yet.");
             return;
         }
@@ -508,16 +478,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { errorToast.style.display = 'none'; }, 4000);
     };
 
-    const showButtonFeedback = (button, message = "Saved!", duration = 2000) => {
-        const originalText = button.innerHTML;
-        button.innerHTML = message;
-        button.disabled = true;
-        setTimeout(() => {
-            button.innerHTML = originalText;
-            button.disabled = false;
-        }, duration);
-    };
-
     const updateHistoryButtons = () => {
         undoBtn.disabled = historyIndex <= 0;
         redoBtn.disabled = historyIndex >= history.length - 1;
@@ -528,7 +488,6 @@ document.addEventListener('DOMContentLoaded', () => {
             historyIndex--;
             imagePreview.src = history[historyIndex];
             updateHistoryButtons();
-            await updateSourceImageFromHistory();
         }
     };
 
@@ -537,7 +496,6 @@ document.addEventListener('DOMContentLoaded', () => {
             historyIndex++;
             imagePreview.src = history[historyIndex];
             updateHistoryButtons();
-            await updateSourceImageFromHistory();
         }
     };
 
@@ -581,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const configResponse = await fetch('/config');
             if (!configResponse.ok) throw new Error(`Failed to load configuration: ${configResponse.statusText}`);
             const appConfig = await configResponse.json();
-            API_BASE_URL = appConfig.apiBaseUrl;
+            API_BASE_URL = appConfig.apiBaseUrl || '';
 
             const response = await fetch('/static/profiles.json');
             if (!response.ok) throw new Error(`Failed to load profiles.json: ${response.statusText}`);
@@ -595,7 +553,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             buildStyleProfilesAccordion(appData.categories);
 
-            // --- EVENT LISTENERS ---
             imagePreview.addEventListener('load', maybeAdjustResolution);
             uploadArea.addEventListener('click', () => !uploadArea.classList.contains('disabled') && fileInput.click());
             fileInput.addEventListener('change', (e) => handleFileUpload(e.target.files[0]));
@@ -672,10 +629,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // --- FINAL INITIALIZATION ---
             loadSettings('default');
             populateCustomProfiles();
-            loadJobsFromStorage(); // Load and poll existing jobs
+            loadJobsFromStorage();
+            startLogPolling(); // Start polling for logs
 
         } catch (error) {
             console.error("Initialization failed:", error);
