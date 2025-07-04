@@ -20,6 +20,7 @@ import torch
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 from loguru import logger
 from PIL import Image, UnidentifiedImageError
 
@@ -172,6 +173,17 @@ queue_lock = threading.Lock()
 app = Flask(__name__)
 app.config.from_object(Config)
 CORS(app)  # Enable Cross-Origin Resource Sharing
+
+# Configure ProxyFix to handle proxy headers correctly
+# This tells Flask to trust proxy headers for HTTPS detection
+app.wsgi_app = ProxyFix(
+    app.wsgi_app,
+    x_for=1,      # Trust 1 proxy for X-Forwarded-For
+    x_proto=1,    # Trust 1 proxy for X-Forwarded-Proto (http/https)
+    x_host=1,     # Trust 1 proxy for X-Forwarded-Host
+    x_prefix=1    # Trust 1 proxy for X-Forwarded-Prefix
+)
+
 # The default Flask logger is now intercepted by Loguru, so no app-specific setup is needed.
 
 
