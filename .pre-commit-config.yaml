@@ -1,0 +1,41 @@
+repos:
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.12.2
+  hooks:
+    # Run the linter.
+    - id: ruff
+      types_or: [ python, pyi ]
+      args: [ --fix ]
+    # Run the formatter.
+    - id: ruff-format
+      types_or: [ python, pyi ]
+
+- repo: https://github.com/pre-commit/mirrors-mypy
+  # Match with your MyPy version
+  rev: 'v1.16.1'
+  hooks:
+    - id: mypy
+      additional_dependencies: [tokenize-rt==3.2.0]
+      name: mypy
+      entry: uv run mypy --no-warn-unused-ignores # --ignore-missing-imports # --strict
+      types: [python]
+
+- repo: https://github.com/executablebooks/mdformat
+  rev: 0.7.22  # Use the ref you want to point at
+  hooks:
+  - id: mdformat
+    # Optionally add plugins
+    additional_dependencies:
+    - mdformat-gfm
+    - mdformat-gfm-alerts
+    - mdformat-frontmatter
+    - mdformat-footnote
+    - mdformat-toc
+    - mdformat-tables
+    - mdformat-wikilink
+    - mdformat-footnote
+    - mdformat-config
+    - mdformat-ruff
+    - ruff
+    - mdformat-web

@@ -1,0 +1,12 @@
+# .mdformat.toml
+#
+# This file shows the default values and is equivalent to having
+# no configuration file at all. Change the values for non-default
+# behavior.
+#
+wrap = "keep"       # possible values: {"keep", "no", INTEGER}
+number = true      # possible values: {false, true}
+end_of_line = "lf"  # possible values: {"lf", "crlf", "keep"}
+
+# Python 3.13+ only:
+# exclude = []        # possible values: a list of file path pattern strings
