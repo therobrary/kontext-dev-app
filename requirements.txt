@@ -1,55 +1,63 @@
 # --- Web Framework & Server ---
-flask
-flask-cors
+flask==3.1.1
+flask-cors==6.0.1
 gunicorn
-itsdangerous
-werkzeug
-jinja2
-blinker
-click
+itsdangerous==2.2.0
+werkzeug==3.1.3
+jinja2==3.1.6
+blinker==1.9.0
+click==8.2.1
 
 # --- Asynchronous Task Queue ---
-celery
-redis
-kombu
-billiard
-vine
-amqp
+celery==5.4.0
+redis==5.0.7
+kombu==5.5.4
+billiard==4.2.1
+vine==5.1.0
+amqp==5.3.1
 
 # --- Core ML & Image Libraries ---
-# By not specifying versions, pip will use the versions
-# already in the base image or install compatible ones.
-torch
+torch==2.7.1
 torchvision
 torchaudio
-Pillow
-numpy
-# This package is specific to the CUDA version in the base image.
-cupy-cuda12x
+Pillow==11.2.1
+numpy==2.2.6
+# Required by dfloat11 for GPU operations
+cupy-cuda12x==13.4.1
 
 # --- Hugging Face & Supporting Libraries ---
-diffusers @ git+https://github.com/huggingface/diffusers.git
-dfloat11
-transformers
-huggingface-hub
-safetensors
-accelerate
+# Pinned to the specific commit from your original list for stability with FLUX.1
+diffusers @ git+https://github.com/huggingface/diffusers.git@21543de571f77cf14b850710529891dbc50dc83c
+dfloat11==0.2.0
+# Pinned transformers version from your original list
+transformers==4.53.0
+huggingface-hub==0.33.1
+safetensors==0.5.3
+accelerate==1.8.1
 # Required by transformers for model loading
-protobuf
-tokenizers
-sentencepiece
+protobuf==6.31.1
+tokenizers==0.21.2
+sentencepiece==0.2.0
 
 # --- Utilities & Other Dependencies ---
-python-dotenv
-loguru
-requests
-pyyaml
-filelock
-fsspec
-packaging
-tqdm
-regex
-sympy
-networkx
-mpmath
-typing-extensions
+python-dotenv==1.1.1
+loguru==0.7.3
+requests==2.32.4
+pyyaml==6.0.2
+filelock==3.18.0
+fsspec==2025.5.1
+packaging==25.0
+tqdm==4.67.1
+regex==2024.11.6
+sympy==1.14.0
+networkx==3.5
+mpmath==1.3.0
+typing-extensions==4.14.0
+certifi
+charset-normalizer
+idna
+urllib3
+six
+wrapt
+zipp
+importlib-metadata
