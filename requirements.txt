@@ -2,14 +2,21 @@
 flask
 flask-cors
 gunicorn
+itsdangerous
+werkzeug
+jinja2
+blinker
+click
 
 # --- Asynchronous Task Queue ---
 celery
 redis
+kombu
+billiard
+vine
+amqp
 
 # --- Core ML & Image Libraries ---
-# By not specifying versions for torch, torchvision, and torchaudio,
-# pip will install versions compatible with the base image if they aren't already present.
 torch
 torchvision
 torchaudio
@@ -18,17 +25,28 @@ numpy
 # This package is specific to the CUDA version in the base image.
 cupy-cuda12x
 
-# --- Hugging Face Libraries ---
-# diffusers is pinned to a specific commit for stability.
-diffusers @ git+https://github.com/huggingface/diffusers.git
+# --- Hugging Face & Supporting Libraries ---
+diffusers
 dfloat11
 transformers
 huggingface-hub
 safetensors
 accelerate
+protobuf
+tokenizers
+sentencepiece
 
-# --- Utilities & Logging ---
+# --- Utilities & Other Dependencies ---
 python-dotenv
 loguru
 requests
 pyyaml
+filelock
+fsspec
+packaging
+tqdm
+regex
+sympy
+networkx
+mpmath
+typing-extensions
