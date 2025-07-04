@@ -1,11 +1,11 @@
 import os
-import time
+import io
 import torch
 from celery import Celery
+from celery.signals import worker_process_init
 from loguru import logger
 from PIL import Image
 from dotenv import load_dotenv
-from threading import Lock
 
 # --- Dotenv Configuration ---
 load_dotenv()
@@ -20,16 +20,18 @@ celery_app = Celery(
 
 # --- Model Initialization ---
 # The model is a global variable for the worker process.
-# We initialize it to None and will load it on the first task run.
+# It will be initialized by the worker_process_init signal handler.
 pipe = None
-model_lock = Lock() # A lock to ensure the model is only initialized once
 
-def initialize_model():
+@worker_process_init.connect
+def initialize_model(**kwargs):
     """
-    Initializes the diffusion model. This function is now only called from within the task.
+    This function is called by the Celery worker process when it starts.
+    It loads the model into memory, ensuring it's ready before any tasks are run.
+    This code is NOT executed by the Gunicorn web server process.
     """
     global pipe
-    logger.info("Initializing model for Celery worker... This may take a few minutes.")
+    logger.info("WORKER PROCESS INIT: Initializing model...")
     try:
         # Use environment variable for device, with auto-detection as fallback
         _default_device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -79,18 +81,24 @@ def initialize_model():
 def generate_image_task(self, pipe_kwargs, result_folder):
     """
     Celery task to generate an image using the diffusion pipeline.
-    The model is loaded on the first run.
     """
     global pipe
-    # Use a lock to ensure that if multiple tasks start at once (with concurrency > 1),
-    # only one will actually initialize the model.
-    with model_lock:
-        if pipe is None:
-            initialize_model()
+    if pipe is None:
+        # This is a fallback in case the worker signal didn't fire,
+        # or for certain testing scenarios.
+        logger.warning("Pipe not initialized, attempting to initialize now...")
+        initialize_model()
 
     job_id = self.request.id
+    
+    # Recreate the PIL Image object from the bytes that were passed.
+    image_bytes = pipe_kwargs.pop("image_bytes")
+    image_info = pipe_kwargs.pop("image_info")
+    input_image = Image.open(io.BytesIO(image_bytes))
+    pipe_kwargs["image"] = input_image
+
     log_params = {
-        k: v for k, v in pipe_kwargs.items() if k not in ["image", "generator"]
+        k: v for k, v in pipe_kwargs.items() if k != "image"
     }
     log_params["seed"] = pipe_kwargs["seed_value"]
     logger.info(f"Processing job {job_id} with params: {log_params}")
