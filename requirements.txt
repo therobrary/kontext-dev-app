@@ -1,40 +1,34 @@
 # --- Web Framework & Server ---
-flask==3.1.1
-flask-cors==6.0.1
+flask
+flask-cors
 gunicorn
-itsdangerous==2.2.0
-werkzeug==3.1.3
-jinja2==3.1.6
-blinker==1.9.0
-click==8.2.1
 
 # --- Asynchronous Task Queue ---
-celery==5.4.0
-redis==5.0.7
-kombu==5.5.4
-billiard==4.2.1
-vine==5.1.0
+celery
+redis
 
 # --- Core ML & Image Libraries ---
-torch==2.7.1
+# By not specifying versions for torch, torchvision, and torchaudio,
+# pip will install versions compatible with the base image if they aren't already present.
+torch
 torchvision
 torchaudio
-Pillow==11.2.1
-numpy==2.2.6
-# dfloat11 requires cupy for GPU operations
+Pillow
+numpy
+# This package is specific to the CUDA version in the base image.
 cupy-cuda12x
 
 # --- Hugging Face Libraries ---
-# Note: diffusers is installed from a specific git commit
-diffusers @ git+https://github.com/huggingface/diffusers.git@21543de571f77cf14b850710529891dbc50dc83c
-dfloat11==0.2.0
-transformers==4.53.0
-huggingface-hub==0.33.1
-safetensors==0.5.3
-accelerate==1.8.1
+# diffusers is pinned to a specific commit for stability.
+diffusers @ git+https://github.com/huggingface/diffusers.git
+dfloat11
+transformers
+huggingface-hub
+safetensors
+accelerate
 
 # --- Utilities & Logging ---
-python-dotenv==1.1.1
-loguru==0.7.3
-requests==2.32.4
-pyyaml==6.0.2
+python-dotenv
+loguru
+requests
+pyyaml
