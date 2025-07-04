@@ -10,7 +10,8 @@ from typing import Any
 import torch
 from dotenv import load_dotenv
 import logging
-import torch  # <-- Added this missing import
+import torch
+import io
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 from loguru import logger
@@ -192,7 +193,8 @@ def parse_request_args(form_data, image_file):
     try:
         # We pass the PIL image object directly to the task
         args = {
-            "image": input_image,
+            "image_bytes": image_bytes,
+            "image_info": {"size": input_image.size, "mode": input_image.mode},
             "prompt": form_data.get("prompt", ""),
             "width": int(form_data.get("width", Config.DEFAULT_WIDTH)),
             "height": int(form_data.get("height", Config.DEFAULT_HEIGHT)),
@@ -223,15 +225,18 @@ def parse_request_args(form_data, image_file):
     if seed_str and seed_str.isdigit():
         seed = int(seed_str)
     else:
-        # Generate a seed if not provided, so it can be passed to the task
         seed = torch.randint(0, 2**32 - 1, (1,)).item()
     
-    # We pass the seed value itself, not a generator object, as it's not JSON serializable
     args["seed_value"] = seed
 
     return args
 
 # --- API Endpoints ---
+@app.route("/config", methods=["GET"])
+def get_config():
+    """Provides frontend configuration."""
+    return jsonify({"apiBaseUrl": ""}) # Base URL is relative on the same host
+
 @app.route("/process-image", methods=["POST"])
 def generate_image_endpoint():
     """
@@ -247,13 +252,10 @@ def generate_image_endpoint():
         logger.warning(f"Bad request from {request.remote_addr}: {e}")
         return jsonify({"error": str(e)}), 400
 
-    # Instead of a local queue, we call the Celery task.
-    # .delay() is a shortcut to .apply_async()
     task = generate_image_task.delay(pipe_kwargs, Config.RESULTS_FOLDER)
     
     logger.info(f"Job {task.id} accepted and sent to Celery worker.")
     
-    # Respond immediately with the task ID
     return jsonify(
         {
             "message": "Request accepted and queued for processing.",
@@ -288,17 +290,14 @@ def get_status(job_id):
         response["error"] = job["error"]
     """Provides the status of a specific Celery task."""
     task_result = celery_app.AsyncResult(job_id)
-
     response = {
         "job_id": job_id,
-        "status": task_result.state, # PENDING, STARTED, SUCCESS, FAILURE, RETRY, REVOKED
+        "status": task_result.state,
     }
-
     if task_result.state == 'FAILURE':
-        response['error'] = str(task_result.info) # .info contains the exception
+        response['error'] = str(task_result.info)
     elif task_result.state == 'SUCCESS':
         response['result'] = task_result.result
-
     return jsonify(response)
 
 
@@ -306,12 +305,8 @@ def get_status(job_id):
 def get_result(job_id):
     """Serves the generated image if the task is complete."""
     task_result = celery_app.AsyncResult(job_id)
-
     if not task_result.ready():
-        return jsonify(
-            {"error": f"Job is not yet complete. Current status: {task_result.state}"}
-        ), 202
-
+        return jsonify({"error": f"Job not complete. Status: {task_result.state}"}), 202
     if task_result.successful():
         result_data = task_result.get()
         result_path = result_data.get("result_path")
@@ -319,12 +314,11 @@ def get_result(job_id):
             return send_file(result_path, mimetype="image/png")
         else:
             return jsonify({"error": "Result file is missing."}), 500
-    else: # Task failed
+    else:
         return jsonify({"error": str(task_result.info)}), 500
 
 @app.route("/")
 def index():
-    # --- Restored to serve the frontend HTML file ---
     return send_file("static/index.html")
 
 # --- Custom Error Handlers ---
