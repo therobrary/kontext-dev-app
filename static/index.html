@@ -34,6 +34,14 @@
                     <p>Stylizing your image... <br> This can take a moment.</p>
                 </div>
             </div>
+
+            <!-- Job Queue Section -->
+            <div id="job-queue-container" class="settings-section">
+                <h2>Job Queue</h2>
+                <div id="job-list">
+                    <!-- Job items will be dynamically inserted here by script.js -->
+                </div>
+            </div>
         </main>
 
         <!-- Controls Panel -->
@@ -204,6 +212,20 @@
 
     <!-- Error Toast Notification -->
     <div id="error-toast"></div>
+
+    <!-- Template for a single job item in the queue -->
+    <template id="job-template">
+        <div class="job-item" data-job-id="">
+            <div class="job-preview">
+                <img src="" alt="Job result preview">
+                <div class="job-spinner"></div>
+            </div>
+            <div class="job-details">
+                <p class="job-id"><strong>ID:</strong> <span></span></p>
+                <p class="job-status"><strong>Status:</strong> <span></span></p>
+            </div>
+        </div>
+    </template>
 
     <script src="/static/script.js"></script>
 </body>

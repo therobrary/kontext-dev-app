@@ -1,14 +1,3 @@
-#
-# For production environments, it's highly recommended to use a proper WSGI server
-# like Gunicorn instead of Flask's built-in development server.
-# Example: gunicorn --workers 1 --threads 4 --timeout 600 -b 0.0.0.0:5000 app:app
-#
-# NOTE: The `--workers 1` is crucial because the model and the job queue are in-memory
-# and not designed to be shared across multiple processes. For multi-worker scalability,
-# a more robust task queue like Celery with Redis or RabbitMQ would be required.
-
-import argparse
-import logging
 import os
 import sys
 import threading
@@ -20,18 +9,22 @@ from typing import Any
 
 import torch
 from dotenv import load_dotenv
+import logging
+import torch  # <-- Added this missing import
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 from loguru import logger
 from PIL import Image, UnidentifiedImageError
 from werkzeug.middleware.proxy_fix import ProxyFix
+from dotenv import load_dotenv
+
+# Import the Celery app instance and the task
+from tasks import celery_app, generate_image_task
 
 # --- Dotenv Configuration ---
 load_dotenv()
 
-
 # --- Logging Configuration (Loguru) ---
-# Remove default Flask logger and use Loguru for consistent, formatted logging
 logger.remove()
 logger.add(
     sys.stderr,
@@ -39,47 +32,31 @@ logger.add(
     format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
 )
 
-
-# Intercept standard logging to capture logs from other libraries (like Gunicorn)
 class InterceptHandler(logging.Handler):
     def emit(self, record):
-        # Filter out successful (INFO level) status polls to avoid cluttering the logs.
-        # We check the message content and the log level. Errors on this endpoint will still be logged.
         if "GET /status/" in record.getMessage() and record.levelno == logging.INFO:
             return
-
-        # Get corresponding Loguru level if it exists
         try:
             level = logger.level(record.levelname).name
         except ValueError:
             level = record.levelno
-
-        # Find caller from where originated the logged message
         frame, depth = logging.currentframe(), 2
         while frame.f_code.co_filename == logging.__file__:
             frame = frame.f_back
             depth += 1
 
         logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
-
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level, record.getMessage()
+        )
 
 logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
-
 # --- Application Configuration ---
 class Config:
-    # Maximum size of the job queue. Prevents server overload.
-    MAX_QUEUE_SIZE = int(os.getenv("MAX_QUEUE_SIZE", 10))
-    # Maximum allowed upload size (e.g., 10 MB). Prevents DoS from large uploads.
     MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", 10))
     MAX_CONTENT_LENGTH = MAX_UPLOAD_MB * 1024 * 1024
-    # Allowed image upload extensions.
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
-    # How long to keep job results in memory (in seconds)
-    JOB_RESULT_TTL = int(os.getenv("JOB_RESULT_TTL", 600))  # 10 minutes
-    # How often the cleanup worker runs (in seconds)
-    CLEANUP_INTERVAL = int(os.getenv("CLEANUP_INTERVAL", 300))  # 5 minutes
-    # Folder to store generated images
     RESULTS_FOLDER = os.getenv("RESULTS_FOLDER", "generated_images")
     # HF Token
     HF_TOKEN = os.getenv("HUGGING_FACE_HUB_TOKEN", None)
@@ -186,21 +163,21 @@ app.wsgi_app = ProxyFix(  # type: ignore[method-assign]
 
 # The default Flask logger is now intercepted by Loguru, so no app-specific setup is needed.
 
+CORS(app)
+
+# Create results directory if it doesn't exist
+try:
+    os.makedirs(Config.RESULTS_FOLDER, exist_ok=True)
+    logger.info(f"Results will be saved in '{Config.RESULTS_FOLDER}' directory.")
+except OSError as e:
+    logger.critical(f"Could not create results directory. Error: {e}")
+    sys.exit(1)
 
 # --- Helper Functions ---
 def is_allowed_file(filename):
-    """Checks if the uploaded file has an allowed extension."""
-    return (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower() in Config.ALLOWED_EXTENSIONS
-    )
-
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
 def parse_request_args(form_data, image_file):
-    """
-    Parses and validates all incoming request parameters.
-    Returns a dictionary of validated arguments or raises ValueError.
-    """
     if not image_file or not is_allowed_file(image_file.filename):
         raise ValueError(
             "Invalid or no image file provided. Allowed types: "
@@ -213,6 +190,7 @@ def parse_request_args(form_data, image_file):
         raise ValueError("The uploaded file is not a valid image.") from err
 
     try:
+        # We pass the PIL image object directly to the task
         args = {
             "image": input_image,
             "prompt": form_data.get("prompt", ""),
@@ -227,203 +205,63 @@ def parse_request_args(form_data, image_file):
             "true_cfg_scale": float(
                 form_data.get("true_cfg_scale", Config.DEFAULT_TRUE_CFG_SCALE)
             ),
-            "max_sequence_length": 512,  # Fixed advanced parameter
+            "max_sequence_length": 512,
             "num_images_per_prompt": 1,
         }
     except (ValueError, TypeError) as e:
         raise ValueError(
             f"Invalid parameter type provided. Please ensure all numerical fields are numbers. Details: {e}"
         ) from e
+        raise ValueError(f"Invalid parameter type provided. Details: {e}")
 
-    # Handle optional text prompts
     for key in ["prompt_2", "negative_prompt", "negative_prompt_2"]:
         value = form_data.get(key)
         if value:
             args[key] = value
 
-    # Handle the seed for reproducibility
     seed_str = form_data.get("seed")
     if seed_str and seed_str.isdigit():
         seed = int(seed_str)
     else:
+        # Generate a seed if not provided, so it can be passed to the task
         seed = torch.randint(0, 2**32 - 1, (1,)).item()
-    args["generator"] = torch.Generator(device=DEVICE).manual_seed(seed)
-    args["seed_value"] = seed  # Store the actual seed used for status reporting
+    
+    # We pass the seed value itself, not a generator object, as it's not JSON serializable
+    args["seed_value"] = seed
 
     return args
 
-
-# --- Background Workers ---
-def job_cleanup_worker():
-    """
-    Periodically cleans up old, completed jobs to free up memory and disk space.
-    """
-    logger.info("Job cleanup worker started.")
-    while True:
-        time.sleep(Config.CLEANUP_INTERVAL)
-        with queue_lock:
-            expired_jobs = []
-            current_time = time.time()
-            # A copy is needed to modify the dict while iterating
-            all_job_ids = list(job_results.keys())
-
-            for job_id in all_job_ids:
-                job = job_results.get(job_id)
-                # Ensure job exists and has a completion time
-                if not job or "completion_time" not in job:
-                    continue
-
-                if (current_time - job["completion_time"]) > Config.JOB_RESULT_TTL:
-                    expired_jobs.append(job_id)
-
-            if expired_jobs:
-                logger.info(f"Cleaning up {len(expired_jobs)} expired jobs...")
-                for job_id in expired_jobs:
-                    job_to_delete = job_results[job_id]
-                    del job_results[job_id]
-                logger.info("Cleanup complete.")
-
-
-def image_generation_worker():
-    """
-    The worker function that runs in a background thread.
-    It continuously pulls jobs from the queue and processes them.
-    """
-    logger.info("Image generation worker started.")
-    while True:
-        job_id = None
-        with queue_lock:
-            if job_queue:
-                job_id = job_queue.popleft()
-                # Set status to 'processing'
-                job_results[job_id]["status"] = "processing"
-                job_results[job_id]["start_time"] = time.time()
-
-        if job_id:
-            pipe_kwargs = job_results[job_id]["params"]
-            log_params = {
-                k: v for k, v in pipe_kwargs.items() if k not in ["image", "generator"]
-            }
-            log_params["seed"] = job_results[job_id]["params"]["seed_value"]
-            logger.info(f"Processing job {job_id} with params: {log_params}")
-            pipe_kwargs.pop("seed_value")
-
-            try:
-                # --- Run the Image Processing Pipeline ---
-                processed_image = pipe(**pipe_kwargs).images[0]
-
-                # Save the image to a file on disk
-                result_filename = f"{job_id}.png"
-                result_path = os.path.join(Config.RESULTS_FOLDER, result_filename)
-                processed_image.save(result_path, "PNG")
-
-                # Store result and update status
-                with queue_lock:
-                    job_results[job_id].update(
-                        {
-                            "status": "completed",
-                            "result_path": result_path,  # Store path instead of buffer
-                            "completion_time": time.time(),
-                        }
-                    )
-                logger.info(f"Job {job_id} completed successfully.")
-
-            except torch.cuda.OutOfMemoryError as e:
-                error_message = "Processing failed due to insufficient GPU memory. Try a smaller image size or reduce batch size."
-                logger.error(f"Job {job_id} failed: {error_message} - {e}")
-                with queue_lock:
-                    job_results[job_id].update(
-                        {"status": "failed", "error": error_message}
-                    )
-            except RuntimeError as e:
-                # Catch other generic PyTorch/CUDA runtime errors
-                error_message = (
-                    f"A runtime error occurred during processing. Details: {e}"
-                )
-                logger.error(f"Job {job_id} failed: {error_message}")
-                with queue_lock:
-                    job_results[job_id].update(
-                        {
-                            "status": "failed",
-                            "error": "An unexpected error occurred. This may be a resource issue.",
-                        }
-                    )
-            except Exception as e:
-                # Catch any other unexpected errors
-                logger.exception(
-                    f"An unexpected error occurred in worker for job {job_id}: {e}"
-                )
-                with queue_lock:
-                    job_results[job_id].update(
-                        {
-                            "status": "failed",
-                            "error": "An unexpected server error occurred.",
-                        }
-                    )
-            finally:
-                # Clean up large objects from the results dict to free memory
-                if "params" in job_results.get(job_id, {}):
-                    del job_results[job_id]["params"]["image"]
-                    del job_results[job_id]["params"]["generator"]
-
-        # Sleep to prevent busy-waiting when the queue is empty
-        time.sleep(0.1)
-
-
 # --- API Endpoints ---
-@app.route("/config", methods=["GET"])
-def get_config():
-    """Provides frontend configuration, including the dynamic API base URL."""
-    # request.host_url provides the root URL of the app, e.g., 'http://127.0.0.1:5000/'
-    # We rstrip('/') to remove the trailing slash for clean concatenation in the frontend.
-    base_url = request.host_url.rstrip("/")
-    logger.debug(f"Providing config with API_BASE_URL: {base_url}")
-    return jsonify({"apiBaseUrl": base_url})
-
-
 @app.route("/process-image", methods=["POST"])
 def generate_image_endpoint():
     """
-    Accepts image generation requests, adds them to a queue,
+    Accepts image generation requests, sends them to the Celery worker,
     and returns a job ID for status polling.
     """
-    with queue_lock:
-        if len(job_queue) >= app.config["MAX_QUEUE_SIZE"]:
-            logger.warning("Job queue is full. Rejecting new request.")
-            return jsonify(
-                {"error": "Server is currently busy. Please try again in a moment."}
-            ), 503  # Service Unavailable
-
     if "image" not in request.files:
         return jsonify({"error": "No 'image' file part in the request."}), 400
 
     try:
-        # This will raise ValueError for any invalid inputs
         pipe_kwargs = parse_request_args(request.form, request.files["image"])
     except ValueError as e:
         logger.warning(f"Bad request from {request.remote_addr}: {e}")
         return jsonify({"error": str(e)}), 400
 
-    job_id = str(uuid.uuid4())
-    with queue_lock:
-        # Store parameters and add job to queue
-        job_results[job_id] = {
-            "status": "queued",
-            "params": pipe_kwargs,
-            "submit_time": time.time(),
-        }
-        job_queue.append(job_id)
-
-    logger.info(f"Job {job_id} accepted and queued. Queue size: {len(job_queue)}")
+    # Instead of a local queue, we call the Celery task.
+    # .delay() is a shortcut to .apply_async()
+    task = generate_image_task.delay(pipe_kwargs, Config.RESULTS_FOLDER)
+    
+    logger.info(f"Job {task.id} accepted and sent to Celery worker.")
+    
+    # Respond immediately with the task ID
     return jsonify(
         {
-            "message": "Request accepted and queued.",
-            "job_id": job_id,
-            "status_url": f"/status/{job_id}",
-            "result_url": f"/result/{job_id}",
+            "message": "Request accepted and queued for processing.",
+            "job_id": task.id,
+            "status_url": f"/status/{task.id}",
+            "result_url": f"/result/{task.id}",
         }
-    ), 202  # Accepted
-
+    ), 202
 
 @app.route("/status/<job_id>", methods=["GET"])
 def get_status(job_id):
@@ -448,89 +286,64 @@ def get_status(job_id):
         response["queue_position"] = queue_pos
     if "error" in job:
         response["error"] = job["error"]
+    """Provides the status of a specific Celery task."""
+    task_result = celery_app.AsyncResult(job_id)
+
+    response = {
+        "job_id": job_id,
+        "status": task_result.state, # PENDING, STARTED, SUCCESS, FAILURE, RETRY, REVOKED
+    }
+
+    if task_result.state == 'FAILURE':
+        response['error'] = str(task_result.info) # .info contains the exception
+    elif task_result.state == 'SUCCESS':
+        response['result'] = task_result.result
 
     return jsonify(response)
 
 
 @app.route("/result/<job_id>", methods=["GET"])
 def get_result(job_id):
-    """Serves the generated image if the job is complete."""
-    with queue_lock:
-        job = job_results.get(job_id)
+    """Serves the generated image if the task is complete."""
+    task_result = celery_app.AsyncResult(job_id)
 
-    if not job:
-        return jsonify({"error": "Job ID not found."}), 404
+    if not task_result.ready():
+        return jsonify(
+            {"error": f"Job is not yet complete. Current status: {task_result.state}"}
+        ), 202
 
-    if job.get("status") == "completed":
-        result_path = job.get("result_path")
+    if task_result.successful():
+        result_data = task_result.get()
+        result_path = result_data.get("result_path")
         if result_path and os.path.exists(result_path):
             return send_file(result_path, mimetype="image/png")
         else:
-            # This case should not happen if status is 'completed'
-            return jsonify({"error": "Result for this job is missing."}), 500
-    elif job.get("status") == "failed":
-        return jsonify({"error": job.get("error", "An unknown error occurred.")}), 500
-    else:
-        return jsonify(
-            {"error": f"Job is not yet complete. Current status: {job.get('status')}"}
-        ), 202  # Accepted
+            return jsonify({"error": "Result file is missing."}), 500
+    else: # Task failed
+        return jsonify({"error": str(task_result.info)}), 500
 
+@app.route("/")
+def index():
+    # --- Restored to serve the frontend HTML file ---
+    return send_file("static/index.html")
 
-# --- Custom Error Handlers for API ---
+# --- Custom Error Handlers ---
 @app.errorhandler(404)
 def not_found_error(error):
-    return jsonify(
-        {
-            "error": "Not Found",
-            "message": "The requested URL was not found on the server.",
-        }
-    ), 404
-
+    return jsonify({"error": "Not Found"}), 404
 
 @app.errorhandler(405)
 def method_not_allowed_error(error):
-    return jsonify(
-        {
-            "error": "Method Not Allowed",
-            "message": "The method is not allowed for the requested URL.",
-        }
-    ), 405
-
+    return jsonify({"error": "Method Not Allowed"}), 405
 
 @app.errorhandler(413)
 def payload_too_large_error(error):
-    return jsonify(
-        {
-            "error": "Payload Too Large",
-            "message": f"File upload is too large. Maximum size is {Config.MAX_UPLOAD_MB}MB.",
-        }
-    ), 413
-
+    return jsonify({"error": "Payload Too Large"}), 413
 
 @app.errorhandler(500)
 def internal_server_error(error):
     logger.exception(f"Internal Server Error: {error}")
-    return jsonify(
-        {
-            "error": "Internal Server Error",
-            "message": "An unexpected error occurred on the server.",
-        }
-    ), 500
-
-
-# --- Main Execution ---
-# Start the background worker thread.
-# The `daemon=True` ensures the thread will exit when the main program exits.
-
-worker_thread = threading.Thread(target=image_generation_worker, daemon=True)
-worker_thread.start()
-
-cleanup_thread = threading.Thread(target=job_cleanup_worker, daemon=True)
-cleanup_thread.start()
-
-@app.route("/")
-def index():
-    return send_file("static/index.html")
+    return jsonify({"error": "Internal Server Error"}), 500
 
 if __name__ == "__main__":
     # 1. Set up the argument parser
@@ -555,3 +368,9 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0", port=args.port, debug=False
     )  # Debug mode should be False for this setup
+
+    # When running with `flask run` or a WSGI server like Gunicorn,
+    # this block is not executed. Gunicorn will directly interact with the `app` object.
+    logger.info("Starting Flask development server.")
+    logger.warning("This is a development server. For production, use Gunicorn and Celery workers.")
+    app.run(host="0.0.0.0", port=5000, debug=False)
