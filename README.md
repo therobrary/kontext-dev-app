@@ -3,9 +3,8 @@
 **Welcome to 4o-ghibli-at-home!** Your own local and private, high-performance AI photo stylizer, powered by the advanced `FLUX.1-Kontext-dev` and `DFloat11` model pipeline.
 
 > ⚡ Transform your images with Ghibli-inspired, anime, artistic, or custom styles using a fast, VRAM-efficient pipeline.
+>
 > 🛡️ No logins, no cloud processing—**your images never leave your computer**.
-
-![Application screenshot](screenshot.png)
 
 - Lossless, quantized model runs on consumer GPUs (RTX 3090/4090 and up)
 - Modern web UI with custom style profiles, undo/redo, and advanced controls
@@ -13,27 +12,28 @@
 - All logging and queueing handled in-memory—no Redis, no Celery required
 - **Linux only for now; Windows support coming soon**
 
-<!-- mdformat-toc start --slug=github --maxlevel=3 --minlevel=1 -->
+![Application screenshot](screenshot.png)
 
-- [Ghibli At Home: Private & Local AI Photo Stylizer](#ghibli-at-home-private--local-ai-photo-stylizer)
-  - [Quick Start](#quick-start)
-    - [Requirements](#requirements)
-    - [Quick overview](#quick-overview)
-  - [Major Features](#major-features)
-  - [Coming Up: Project Roadmap](#coming-up-project-roadmap)
-  - [Setup & Installation](#setup--installation)
-    - [1. Clone the Project](#1-clone-the-project)
-    - [2. Create and Activate a Python Virtual Environment](#2-create-and-activate-a-python-virtual-environment)
-    - [3. Install Dependencies](#3-install-dependencies)
-    - [4. Configure Your Environment](#4-configure-your-environment)
-  - [How to Run](#how-to-run)
-    - [App Options](#app-options)
-  - [Open the App](#open-the-app)
-  - [API Endpoints](#api-endpoints)
-  - [Project Structure](#project-structure)
-  - [Deployment / Production Checklist](#deployment--production-checklist)
-  - [License](#license)
-  - [Support](#support)
+<!-- mdformat-toc start --slug=github --maxlevel=3 --minlevel=2 -->
+
+- [Quick Start](#quick-start)
+  - [Requirements](#requirements)
+  - [Quick overview](#quick-overview)
+- [Major Features](#major-features)
+- [Coming Up: Project Roadmap](#coming-up-project-roadmap)
+- [Setup & Installation](#setup--installation)
+  - [1. Clone the Project](#1-clone-the-project)
+  - [2. Create and Activate a Python Virtual Environment](#2-create-and-activate-a-python-virtual-environment)
+  - [3. Install Dependencies](#3-install-dependencies)
+  - [4. Configure Your Environment](#4-configure-your-environment)
+- [How to Run](#how-to-run)
+  - [App Options](#app-options)
+- [Open the App](#open-the-app)
+- [API Endpoints](#api-endpoints)
+- [Project Structure](#project-structure)
+- [Deployment / Production Checklist](#deployment--production-checklist)
+- [License](#license)
+- [Support](#support)
 
 <!-- mdformat-toc end -->
 
@@ -92,7 +92,7 @@ Here's a look at the features and improvements planned for the near future:
 
 - **Expanded Model Support:**
   - **GGUF & Advanced Quantization:** Introduce support for GGUF model formats and automatically select the best quantization level based on detected hardware. This will significantly lower VRAM requirements and broaden hardware compatibility.
-- **`uv` Project Integration:** Fully transition the project to use `uv` for dependency and environment management, leveraging its speed.
+- ~~**`uv` Project Integration:** Fully transition the project to use `uv` for dependency and environment management, leveraging its speed.~~
 
 **Core Enhancements:**
 
