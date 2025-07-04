@@ -6,19 +6,14 @@
 >
 > 🛡️ No logins, no cloud processing—**your images never leave your computer**.
 
-- Lossless, quantized model runs on consumer GPUs (RTX 3090/4090 and up)
-- Modern web UI with custom style profiles, undo/redo, and advanced controls
-- Images and jobs stored locally and cleaned up automatically
-- All logging and queueing handled in-memory—no Redis, no Celery required
-- **Linux only for now; Windows support coming soon**
-
 ![Application screenshot](screenshot.png)
 
 <!-- mdformat-toc start --slug=github --maxlevel=3 --minlevel=2 -->
 
 - [Quick Start](#quick-start)
+  - [How Does It Work?](#how-does-it-work)
   - [Requirements](#requirements)
-  - [Quick overview](#quick-overview)
+  - [Setup Overview](#setup-overview)
 - [Major Features](#major-features)
 - [Coming Up: Project Roadmap](#coming-up-project-roadmap)
 - [Setup & Installation](#setup--installation)
@@ -39,7 +34,13 @@
 
 ## Quick Start<a name="quick-start"></a>
 
-**I recommend using `uv`.** If you don't have `uv`, install it with `curl -LsSf https://astral.sh/uv/install.sh | sh`. You may need to restart your terminal.
+### How Does It Work?<a name="how-does-it-work"></a>
+
+- Modern web UI with custom style profiles, undo/redo, and advanced controls
+- Lossless, quantized model runs on consumer GPUs (RTX 3090/4090 and up)
+- Images and jobs stored locally and cleaned up automatically
+- All logging and queueing handled in-memory—no Redis, no Celery required
+- **Linux only for now; works on both mobile and desktop. Windows support coming soon.**
 
 ### Requirements<a name="requirements"></a>
 
@@ -53,18 +54,20 @@
 - Modern web browser (Chrome, Firefox, Edge, etc.)
 - Some images to Ghiblify!
 
-### Quick overview<a name="quick-overview"></a>
+### Setup Overview<a name="setup-overview"></a>
+
+**I recommend using `uv`.** If you don't have `uv`, install it with `curl -LsSf https://astral.sh/uv/install.sh | sh`. You may need to restart your terminal.
 
 **Here's the quick overview, details are explained further below:**
 
 ```bash
 git clone https://github.com/TheAhmadOsman/4o-ghibli-at-home.git
 cd 4o-ghibli-at-home
-uv venv .venv --python 3.11
+uv venv .venv --python 3.12
 source .venv/bin/activate
 uv sync
 cp .env_template .env             # configure as needed
-python3.11 app.py                 # start the server
+python3.12 app.py                 # start the server
 ```
 
 ## Major Features<a name="major-features"></a>
@@ -117,7 +120,7 @@ A virtual environment is crucial for isolating project dependencies.
 
 ```bash
 # Create the virtual environment using uv
-uv venv .vemv --python 3.11
+uv venv .vemv --python 3.12
 ```
 
 After creating the environment, activate it:
@@ -152,7 +155,7 @@ The application runs with a single command, which starts the web server and the 
 - **For Development (Recommended & Tested):**
 
   ```bash
-  python3.11 app.py
+  python3.12 app.py
   ```
 
 - **For Production:**
@@ -178,7 +181,7 @@ The application runs with a single command, which starts the web server and the 
 You can customize the server port by using the `--port` option when starting the app. For example, to run the server on port 5555:
 
 ```bash
-python3.11 app.py --port 5555
+python3.12 app.py --port 5555
 ```
 
 By default, the application runs on port 5000 if no `--port` argument is provided.

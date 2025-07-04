@@ -12,7 +12,7 @@ env/
 ENV/
 .venv/
 .pipenv/
-.python-version
+# .python-version
 
 # Flask instance and config files
 instance/

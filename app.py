@@ -15,14 +15,16 @@ import threading
 import time
 import uuid
 from collections import deque
+from contextlib import suppress
+from typing import Any
 
 import torch
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
-from werkzeug.middleware.proxy_fix import ProxyFix
 from loguru import logger
 from PIL import Image, UnidentifiedImageError
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # --- Dotenv Configuration ---
 load_dotenv()
@@ -58,9 +60,7 @@ class InterceptHandler(logging.Handler):
             frame = frame.f_back
             depth += 1
 
-        logger.opt(depth=depth, exception=record.exc_info).log(
-            level, record.getMessage()
-        )
+        logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
 
 logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
@@ -163,8 +163,8 @@ except Exception as e:
 # --- Asynchronous Task Queue Setup ---
 # This simple in-memory queue is for a single-worker setup.
 # For multi-worker production, use Celery/Redis.
-job_queue = deque()
-job_results = {}
+job_queue: deque[str] = deque()
+job_results: dict[str, dict[str, Any]] = {}
 # A lock is crucial for safely modifying the queue and results from different threads.
 queue_lock = threading.Lock()
 
@@ -176,12 +176,12 @@ CORS(app)  # Enable Cross-Origin Resource Sharing
 
 # Configure ProxyFix to handle proxy headers correctly
 # This tells Flask to trust proxy headers for HTTPS detection
-app.wsgi_app = ProxyFix(
+app.wsgi_app = ProxyFix(  # type: ignore[method-assign]
     app.wsgi_app,
-    x_for=1,      # Trust 1 proxy for X-Forwarded-For
-    x_proto=1,    # Trust 1 proxy for X-Forwarded-Proto (http/https)
-    x_host=1,     # Trust 1 proxy for X-Forwarded-Host
-    x_prefix=1    # Trust 1 proxy for X-Forwarded-Prefix
+    x_for=1,  # Trust 1 proxy for X-Forwarded-For
+    x_proto=1,  # Trust 1 proxy for X-Forwarded-Proto (http/https)
+    x_host=1,  # Trust 1 proxy for X-Forwarded-Host
+    x_prefix=1,  # Trust 1 proxy for X-Forwarded-Prefix
 )
 
 # The default Flask logger is now intercepted by Loguru, so no app-specific setup is needed.
@@ -209,8 +209,8 @@ def parse_request_args(form_data, image_file):
 
     try:
         input_image = Image.open(image_file.stream).convert("RGB")
-    except UnidentifiedImageError:
-        raise ValueError("The uploaded file is not a valid image.")
+    except UnidentifiedImageError as err:
+        raise ValueError("The uploaded file is not a valid image.") from err
 
     try:
         args = {
@@ -233,7 +233,7 @@ def parse_request_args(form_data, image_file):
     except (ValueError, TypeError) as e:
         raise ValueError(
             f"Invalid parameter type provided. Please ensure all numerical fields are numbers. Details: {e}"
-        )
+        ) from e
 
     # Handle optional text prompts
     for key in ["prompt_2", "negative_prompt", "negative_prompt_2"]:
@@ -447,14 +447,11 @@ def get_status(job_id):
     # Calculate queue position
     queue_pos = -1
     if job["status"] == "queued":
-        try:
-            # This needs to be in a try-except in case the job is dequeued
-            # between getting the job status and checking the queue.
+        # We suppress ValueError because the job might be dequeued between
+        # getting its status and checking its position in the queue. If it's
+        # gone, queue_pos remains -1, which is handled correctly.
+        with suppress(ValueError):
             queue_pos = list(job_queue).index(job_id) + 1
-        except ValueError:
-            # The job is no longer in the queue, its status might be updating.
-            # The client can just poll again.
-            pass
 
     response = {"job_id": job_id, "status": job.get("status")}
     if queue_pos != -1:
@@ -534,9 +531,7 @@ def internal_server_error(error):
 # --- Main Execution ---
 if __name__ == "__main__":
     # 1. Set up the argument parser
-    parser = argparse.ArgumentParser(
-        description="Run the Flask image generation server."
-    )
+    parser = argparse.ArgumentParser(description="Run the Flask image generation server.")
     parser.add_argument(
         "--port",
         type=int,
