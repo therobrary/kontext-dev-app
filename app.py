@@ -47,6 +47,7 @@ class Config:
     MAX_CONTENT_LENGTH = MAX_UPLOAD_MB * 1024 * 1024
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
     RESULTS_FOLDER = os.getenv("RESULTS_FOLDER", "generated_images")
+    CELERY_LOG_FILE = os.getenv("CELERY_LOG_FILE", "/app/celery_worker.log")
     DEFAULT_WIDTH = 1024
     DEFAULT_HEIGHT = 1024
     DEFAULT_STEPS = 28
@@ -82,8 +83,6 @@ def parse_request_args(form_data, image_file):
     except UnidentifiedImageError:
         raise ValueError("The uploaded file is not a valid image.")
 
-    # Convert the image to bytes to pass to Celery.
-    # This is more robust than passing a complex object.
     with io.BytesIO() as output:
         input_image.save(output, format="PNG")
         image_bytes = output.getvalue()
@@ -128,15 +127,10 @@ def parse_request_args(form_data, image_file):
 # --- API Endpoints ---
 @app.route("/config", methods=["GET"])
 def get_config():
-    """Provides frontend configuration."""
-    return jsonify({"apiBaseUrl": ""}) # Base URL is relative on the same host
+    return jsonify({"apiBaseUrl": ""})
 
 @app.route("/process-image", methods=["POST"])
 def generate_image_endpoint():
-    """
-    Accepts image generation requests, sends them to the Celery worker,
-    and returns a job ID for status polling.
-    """
     if "image" not in request.files:
         return jsonify({"error": "No 'image' file part in the request."}), 400
 
@@ -161,7 +155,6 @@ def generate_image_endpoint():
 
 @app.route("/status/<job_id>", methods=["GET"])
 def get_status(job_id):
-    """Provides the status of a specific Celery task."""
     task_result = celery_app.AsyncResult(job_id)
     response = {
         "job_id": job_id,
@@ -176,7 +169,6 @@ def get_status(job_id):
 
 @app.route("/result/<job_id>", methods=["GET"])
 def get_result(job_id):
-    """Serves the generated image if the task is complete."""
     task_result = celery_app.AsyncResult(job_id)
     if not task_result.ready():
         return jsonify({"error": f"Job not complete. Status: {task_result.state}"}), 202
@@ -189,6 +181,24 @@ def get_result(job_id):
             return jsonify({"error": "Result file is missing."}), 500
     else:
         return jsonify({"error": str(task_result.info)}), 500
+
+# NEW: Endpoint to get the celery worker log
+@app.route("/celery-log", methods=["GET"])
+def get_celery_log():
+    """Reads the last N lines of the Celery worker log file."""
+    log_file_path = app.config["CELERY_LOG_FILE"]
+    try:
+        if os.path.exists(log_file_path):
+            with open(log_file_path, 'r') as f:
+                # Read all lines and return the last 50
+                lines = f.readlines()
+                log_content = "".join(lines[-50:])
+                return jsonify({"log": log_content})
+        else:
+            return jsonify({"log": "Log file not found."})
+    except Exception as e:
+        logger.error(f"Could not read log file: {e}")
+        return jsonify({"error": "Could not read log file."}), 500
 
 @app.route("/")
 def index():
