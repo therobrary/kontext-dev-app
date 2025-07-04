@@ -17,6 +17,8 @@ vine
 amqp
 
 # --- Core ML & Image Libraries ---
+# By not specifying versions, pip will use the versions
+# already in the base image or install compatible ones.
 torch
 torchvision
 torchaudio
@@ -26,12 +28,13 @@ numpy
 cupy-cuda12x
 
 # --- Hugging Face & Supporting Libraries ---
-diffusers
+diffusers @ git+https://github.com/huggingface/diffusers.git
 dfloat11
 transformers
 huggingface-hub
 safetensors
 accelerate
+# Required by transformers for model loading
 protobuf
 tokenizers
 sentencepiece
