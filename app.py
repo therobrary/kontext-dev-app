@@ -6,7 +6,7 @@ import uuid
 from collections import deque
 from contextlib import suppress
 from typing import Any
-
+import argparse
 import torch
 from dotenv import load_dotenv
 import logging
@@ -178,6 +178,7 @@ except OSError as e:
 # --- Helper Functions ---
 def is_allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in Config.ALLOWED_EXTENSIONS
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
 def parse_request_args(form_data, image_file):
     if not image_file or not is_allowed_file(image_file.filename):
@@ -195,8 +196,14 @@ def parse_request_args(form_data, image_file):
         input_image.save(output, format="PNG")
         image_bytes = output.getvalue()
 
+    with io.BytesIO() as output:
+        input_image.save(output, format="PNG")
+        image_bytes = output.getvalue()
+
     try:
         args = {
+            "image_bytes": image_bytes,
+            "image_info": {"size": input_image.size, "mode": input_image.mode},
             "image_bytes": image_bytes,
             "image_info": {"size": input_image.size, "mode": input_image.mode},
             "prompt": form_data.get("prompt", ""),
@@ -211,6 +218,7 @@ def parse_request_args(form_data, image_file):
             "true_cfg_scale": float(
                 form_data.get("true_cfg_scale", Config.DEFAULT_TRUE_CFG_SCALE)
             ),
+            "max_sequence_length": 512,
             "max_sequence_length": 512,
             "num_images_per_prompt": 1,
         }
@@ -232,12 +240,15 @@ def parse_request_args(form_data, image_file):
         seed = torch.randint(0, 2**32 - 1, (1,)).item()
     
     args["seed_value"] = seed
+    
+    args["seed_value"] = seed
 
     return args
 
 # --- API Endpoints ---
 @app.route("/config", methods=["GET"])
 def get_config():
+    return jsonify({"apiBaseUrl": ""})
     return jsonify({"apiBaseUrl": ""})
 
 @app.route("/process-image", methods=["POST"])
@@ -255,8 +266,16 @@ def generate_image_endpoint():
     
     logger.info(f"Job {task.id} accepted and sent to Celery worker.")
     
+    task = generate_image_task.delay(pipe_kwargs, Config.RESULTS_FOLDER)
+    
+    logger.info(f"Job {task.id} accepted and sent to Celery worker.")
+    
     return jsonify(
         {
+            "message": "Request accepted and queued for processing.",
+            "job_id": task.id,
+            "status_url": f"/status/{task.id}",
+            "result_url": f"/result/{task.id}",
             "message": "Request accepted and queued for processing.",
             "job_id": task.id,
             "status_url": f"/status/{task.id}",
@@ -287,9 +306,16 @@ def get_result(job_id):
     if task_result.successful():
         result_data = task_result.get()
         result_path = result_data.get("result_path")
+    task_result = celery_app.AsyncResult(job_id)
+    if not task_result.ready():
+        return jsonify({"error": f"Job not complete. Status: {task_result.state}"}), 202
+    if task_result.successful():
+        result_data = task_result.get()
+        result_path = result_data.get("result_path")
         if result_path and os.path.exists(result_path):
             return send_file(result_path, mimetype="image/png")
         else:
+            return jsonify({"error": "Result file is missing."}), 500
             return jsonify({"error": "Result file is missing."}), 500
     else:
         return jsonify({"error": str(task_result.info)}), 500
@@ -315,23 +341,52 @@ def get_celery_log():
 @app.route("/")
 def index():
     return send_file("static/index.html")
+    return jsonify({"error": str(task_result.info)}), 500
 
+# NEW: Endpoint to get the celery worker log
+@app.route("/celery-log", methods=["GET"])
+def get_celery_log():
+    """Reads the last N lines of the Celery worker log file."""
+    log_file_path = app.config["CELERY_LOG_FILE"]
+    try:
+        if os.path.exists(log_file_path):
+            with open(log_file_path, 'r') as f:
+                # Read all lines and return the last 50
+                lines = f.readlines()
+                log_content = "".join(lines[-50:])
+                return jsonify({"log": log_content})
+        else:
+            return jsonify({"log": "Log file not found."})
+    except Exception as e:
+        logger.error(f"Could not read log file: {e}")
+        return jsonify({"error": "Could not read log file."}), 500
+
+@app.route("/")
+def index():
+    return send_file("static/index.html")
+
+# --- Custom Error Handlers ---
 # --- Custom Error Handlers ---
 @app.errorhandler(404)
 def not_found_error(error):
+    return jsonify({"error": "Not Found"}), 404
     return jsonify({"error": "Not Found"}), 404
 
 @app.errorhandler(405)
 def method_not_allowed_error(error):
     return jsonify({"error": "Method Not Allowed"}), 405
+    return jsonify({"error": "Method Not Allowed"}), 405
 
 @app.errorhandler(413)
 def payload_too_large_error(error):
+    return jsonify({"error": "Payload Too Large"}), 413
     return jsonify({"error": "Payload Too Large"}), 413
 
 @app.errorhandler(500)
 def internal_server_error(error):
     logger.exception(f"Internal Server Error: {error}")
+    return jsonify({"error": "Internal Server Error"}), 500
+
     return jsonify({"error": "Internal Server Error"}), 500
 
 if __name__ == "__main__":
