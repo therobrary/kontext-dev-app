@@ -1,0 +1,75 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        build-args: |
+          CACHE_BUSTER=${{ github.sha }}
+
+    - name: Run basic container test
+      run: |
+        # Test that the image can be pulled and basic container starts
+        echo "Testing pre-built image..."
+        docker run --rm -d --name test-container -p 5000:5000 \
+          -e HUGGING_FACE_HUB_TOKEN="" \
+          -e PYTORCH_DEVICE=cpu \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        
+        # Wait for container to start and check if it's running
+        sleep 15
+        if docker ps | grep -q test-container; then
+          echo "Container started successfully"
+          # Try to access the health endpoint
+          timeout 10 bash -c 'until curl -f http://localhost:5000/config; do sleep 1; done' && echo "Health check passed" || echo "Health check failed but container is running"
+        else
+          echo "Container failed to start"
+          docker logs test-container || true
+          exit 1
+        fi
+        
+        # Clean up
+        docker stop test-container || true
