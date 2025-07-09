@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  kontext-app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      # Application Configuration
+      - MAX_UPLOAD_MB=10
+      - RESULTS_FOLDER=generated_images
+      - MAX_QUEUE_SIZE=10
+      - JOB_RESULT_TTL=600
+      - CLEANUP_INTERVAL=300
+      
+      # Redis Configuration (using internal redis in container)
+      - REDIS_URL=redis://127.0.0.1:6379/0
+      
+      # Model & Hardware Settings
+      # Set your Hugging Face token here or pass via environment
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN:-}
+      - PYTORCH_DEVICE=cuda
+    volumes:
+      # Persist generated images
+      - ./generated_images:/app/generated_images
+      # Persist Hugging Face cache
+      - ./huggingface_cache:/app/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
