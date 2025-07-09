@@ -1,0 +1,57 @@
+# Git and version control
+.git
+.gitignore
+
+# Python cache and environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+ENV/
+
+# Development and IDE files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Documentation and images (keep DOCKER.md accessible)
+README.md
+screenshot.png
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.old
+celerybeat-schedule
+celerybeat.pid
+*.pid
+
+# Generated and cache directories
+generated_images/
+huggingface_cache/
+DFloat11__FLUX.1-Kontext-dev-DF11/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Docker files for other environments
+Docker/
+
+# Coverage and test reports
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Node modules (if any)
+node_modules/
+
+# Jupyter checkpoints
+.ipynb_checkpoints

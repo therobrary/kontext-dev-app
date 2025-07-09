@@ -101,7 +101,24 @@ Here's a look at the features and improvements planned for the near future:
 
 - **More Styling Profiles:** Add a new wave of creative and visual style presets to the frontend.
 - **Windows Support:** Official installation and setup instructions for Windows users.
-- **Dockerization:** Provide a `Dockerfile` for easy, one-command deployment in a containerized environment.
+- ~~**Dockerization:** Provide a `Dockerfile` for easy, one-command deployment in a containerized environment.~~
+
+## Docker Deployment<a name="docker-deployment"></a>
+
+🐳 **New!** Docker support is now available for easy deployment to any Docker host.
+
+For detailed Docker deployment instructions, see [DOCKER.md](DOCKER.md).
+
+**Quick Start with Docker:**
+```bash
+# Using docker-compose (recommended)
+export HUGGING_FACE_HUB_TOKEN=your_token_here
+docker-compose up --build
+
+# Or using Docker directly
+docker build -t kontext-dev-app .
+docker run -p 5000:5000 --gpus all kontext-dev-app
+```
 
 ## Setup & Installation<a name="setup--installation"></a>
 
