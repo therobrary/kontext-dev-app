@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Docker Compose file for using pre-built images from GitHub Container Registry
 # This file pulls the pre-built image instead of building locally
 
