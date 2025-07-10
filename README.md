@@ -113,9 +113,9 @@ For detailed Docker deployment instructions, see [DOCKER.md](DOCKER.md).
 Pre-built images are automatically published to the GitHub Container Registry whenever the main branch is updated.
 
 ```bash
-# Using pre-built image with docker-compose (recommended)
+# Using pre-built image with docker compose (recommended)
 export HUGGING_FACE_HUB_TOKEN=your_token_here
-docker-compose -f docker-compose.prod.yml up
+docker compose -f docker-compose.prod.yml up
 
 # Or using pre-built image directly
 docker run -p 5000:5000 --gpus all \
@@ -125,9 +125,9 @@ docker run -p 5000:5000 --gpus all \
 
 **Build from Source:**
 ```bash
-# Using docker-compose (builds locally)
+# Using docker compose (builds locally)
 export HUGGING_FACE_HUB_TOKEN=your_token_here
-docker-compose up --build
+docker compose up --build
 
 # Or using Docker directly
 docker build -t kontext-dev-app .

@@ -21,7 +21,7 @@ Pre-built Docker images are automatically published to the GitHub Container Regi
 
 2. **Start the application using pre-built image:**
    ```bash
-   docker-compose -f docker-compose.prod.yml up
+   docker compose -f docker-compose.prod.yml up
    ```
 
    The application will be available at http://localhost:5000
@@ -56,7 +56,7 @@ For development or if you want to modify the application:
 
 3. **Start the application:**
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
    The application will be available at http://localhost:5000
