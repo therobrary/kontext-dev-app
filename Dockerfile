@@ -31,14 +31,18 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and create non-root user
 RUN echo "Cache Buster Value: ${CACHE_BUSTER}" && \
     apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     redis-server \
     python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r appuser && useradd -r -g appuser appuser \
+    && mkdir -p /app/generated_images /app/huggingface /var/lib/redis /var/log/redis \
+    && chown -R appuser:appuser /app /var/lib/redis /var/log/redis \
+    && chown appuser:appuser /etc/redis/redis.conf || true
 
 # Copy application files
 COPY . .
@@ -48,8 +52,12 @@ COPY . .
 # pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
 RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
 
-# Make start script executable
-RUN chmod +x start.sh
+# Make start script executable and switch to non-root user
+RUN chmod +x start.sh \
+    && chown appuser:appuser start.sh
+
+# Switch to non-root user
+USER appuser
 
 # Expose ports for Flask app and Redis
 EXPOSE 5000 6379

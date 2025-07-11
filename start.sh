@@ -29,12 +29,14 @@ echo ".env file created successfully."
 
 # --- Start Background Services ---
 echo "Starting Redis server in the background..."
-redis-server --daemonize yes
+# Start Redis with appropriate permissions for the appuser
+redis-server --daemonize yes --bind 127.0.0.1 --port 6379
 echo "Redis server started."
 
 echo "Starting Celery worker in the background..."
 # The '&' at the end runs this command as a background process.
 # We direct output to a log file for easier debugging.
+# Running as the current user (appuser) instead of root for security
 celery -A tasks.celery_app worker --loglevel=info --concurrency=1 > /app/celery_worker.log 2>&1 &
 echo "Celery worker started. Logs are in /app/celery_worker.log"
 
