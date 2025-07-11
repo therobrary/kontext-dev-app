@@ -46,7 +46,13 @@ def initialize_model(**kwargs):
             )
 
         from dfloat11 import DFloat11Model
-        from diffusers import FluxKontextPipeline
+        try:
+            from diffusers import FluxKontextPipeline
+        except ImportError:
+            # Fallback for older versions of diffusers
+            logger.error("FluxKontextPipeline not found. This requires the development version of diffusers.")
+            logger.error("Please ensure you have installed: pip install git+https://github.com/huggingface/diffusers.git")
+            raise ImportError("FluxKontextPipeline requires the development version of diffusers from GitHub")
 
         hf_token = os.getenv("HUGGING_FACE_HUB_TOKEN")
         

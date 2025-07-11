@@ -31,14 +31,18 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and create non-root user
 RUN echo "Cache Buster Value: ${CACHE_BUSTER}" && \
     apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     redis-server \
     python3-pip \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r appuser && useradd -r -g appuser appuser \
+    && mkdir -p /app/generated_images /app/huggingface /var/lib/redis /var/log/redis \
+    && chown -R appuser:appuser /app /var/lib/redis /var/log/redis \
+    && chown appuser:appuser /etc/redis/redis.conf || true
 
 # Copy application files
 COPY . .
@@ -46,10 +50,22 @@ COPY . .
 # Install Python dependencies
 # Note: In environments with SSL issues, you may need to add --trusted-host flags:
 # pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
-RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
+# Configure git to work with potential SSL issues and install dependencies
+RUN git config --global http.sslVerify false && \
+    pip install --no-cache-dir --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt || \
+    (echo "Network installation failed, trying alternative approach..." && \
+     pip install --no-cache-dir --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org \
+     celery redis "dfloat11[cuda12]>=0.2.0" "flask>=3.1.1" "flask-cors>=6.0.1" "loguru>=0.7.3" \
+     "protobuf>=6.31.1" "python-dotenv>=1.1.1" "sentencepiece>=0.2.0" "gunicorn>=23.0.0" && \
+     echo "WARNING: Using standard diffusers instead of development version. FluxKontextPipeline may not be available." && \
+     pip install --no-cache-dir diffusers)
 
-# Make start script executable
-RUN chmod +x start.sh
+# Make start script executable and switch to non-root user
+RUN chmod +x start.sh \
+    && chown appuser:appuser start.sh
+
+# Switch to non-root user
+USER appuser
 
 # Expose ports for Flask app and Redis
 EXPOSE 5000 6379
