@@ -10,7 +10,38 @@ This repository includes Docker support for easy deployment to any Docker host.
 
 ## Quick Start with Docker
 
-### Option 1: Using docker-compose (Recommended)
+### Option 1: Using Pre-built Images (Fastest)
+
+Pre-built Docker images are automatically published to the GitHub Container Registry and updated whenever the main branch changes.
+
+1. **Set your Hugging Face token:**
+   ```bash
+   export HUGGING_FACE_HUB_TOKEN=your_token_here
+   ```
+
+2. **Start the application using pre-built image:**
+   ```bash
+   docker compose -f docker-compose.prod.yml up
+   ```
+
+   The application will be available at http://localhost:5000
+
+   Or using Docker directly:
+   ```bash
+   docker run -d \
+     --name kontext-dev-app \
+     --gpus all \
+     -p 5000:5000 \
+     -v ./generated_images:/app/generated_images \
+     -v ./huggingface_cache:/app/huggingface \
+     -e HUGGING_FACE_HUB_TOKEN=your_token_here \
+     -e PYTORCH_DEVICE=cuda \
+     ghcr.io/therobrary/kontext-dev-app:latest
+   ```
+
+### Option 2: Build from Source (Development)
+
+For development or if you want to modify the application:
 
 1. **Clone the repository:**
    ```bash
@@ -25,14 +56,20 @@ This repository includes Docker support for easy deployment to any Docker host.
 
 3. **Start the application:**
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
    The application will be available at http://localhost:5000
 
-### Option 2: Using Docker directly
+### Option 3: Using Docker directly (Build from Source)
 
-1. **Build the image:**
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/therobrary/kontext-dev-app.git
+   cd kontext-dev-app
+   ```
+
+2. **Build the image:**
    ```bash
    docker build -t kontext-dev-app .
    ```

@@ -15,6 +15,13 @@ FROM pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime
 # Build argument for cache busting
 ARG CACHE_BUSTER=none
 
+# Add labels for better registry metadata
+LABEL org.opencontainers.image.title="Kontext Dev App"
+LABEL org.opencontainers.image.description="AI Photo Stylizer using FLUX.1-Kontext-dev model with DFloat11 quantization"
+LABEL org.opencontainers.image.source="https://github.com/therobrary/kontext-dev-app"
+LABEL org.opencontainers.image.licenses="AGPL-3.0"
+LABEL org.opencontainers.image.vendor="therobrary"
+
 # Environment configuration
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=Etc/UTC \
@@ -39,7 +46,7 @@ COPY . .
 # Install Python dependencies
 # Note: In environments with SSL issues, you may need to add --trusted-host flags:
 # pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
 
 # Make start script executable
 RUN chmod +x start.sh

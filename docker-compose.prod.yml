@@ -1,6 +1,9 @@
+# Docker Compose file for using pre-built images from GitHub Container Registry
+# This file pulls the pre-built image instead of building locally
+
 services:
   kontext-app:
-    build: .
+    image: ghcr.io/therobrary/kontext-dev-app:latest
     ports:
       - "5000:5000"
     environment:
