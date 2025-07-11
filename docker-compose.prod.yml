@@ -24,8 +24,8 @@ services:
     volumes:
       # Persist generated images
       - ./generated_images:/app/generated_images
-      # Persist Hugging Face cache
-      - ./huggingface_cache:/app/huggingface
+      # Persist Hugging Face cache using Docker volume
+      - huggingface_cache:/app/huggingface
     deploy:
       resources:
         reservations:
@@ -33,3 +33,6 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+
+volumes:
+  huggingface_cache:
