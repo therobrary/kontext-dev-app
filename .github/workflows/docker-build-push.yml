@@ -57,7 +57,7 @@ jobs:
         docker run --rm -d --name test-container -p 5000:5000 \
           -e HUGGING_FACE_HUB_TOKEN="" \
           -e PYTORCH_DEVICE=cpu \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          $(echo "${{ steps.meta.outputs.tags }}" | cut -d',' -f1)
         
         # Wait for container to start and check if it's running
         sleep 15
