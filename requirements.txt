@@ -1,7 +1,7 @@
 celery
 redis
 dfloat11[cuda12]>=0.2.0
-git+https://github.com/huggingface/diffusers.git
+git+https://github.com/huggingface/diffusers.git@941b7fc0843139e52419a65b7fa850169fde0360
 flask>=3.1.1
 flask-cors>=6.0.1
 loguru>=0.7.3
